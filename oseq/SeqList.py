@@ -65,6 +65,9 @@ class SeqList(object):
         '''Searches through the SeqList and returns all similar Seqs.'''
         raise NotImplementedError
 
+    def filter(self, method=''):
+        raise NotImplementedError
+
     def assemble(self, method=''):
         raise NotImplementedError
 
@@ -72,9 +75,13 @@ class SeqList(object):
         if file_type is None:
             file_type = filename.split(os.path.extsep)[-1]
         
+        fh = open(filename, 'w')
         if file_type == 'fasta' or file_type == 'fa':
-            pass
+            from oseq.FileFormats import FASTA
+            FASTA.write(fh, self._seqs)
         elif file_type == 'fastq' or file_type == 'fq':
-            pass
+            from oseq.FileFormats import FASTQ
+            FASTQ.write(fh, self._seqs)
         self._file = filename
         self._ftype = file_type
+        #TODO: make me into a FileSeqList now?

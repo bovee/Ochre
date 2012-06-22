@@ -14,7 +14,7 @@ file_type = 'fq'
 #            seq += ln.decode(enc).strip()
 #    yield Seq(seq, name=name)
 
-def read_fq(fh, enc='utf-8', qtype=None):
+def read(fh, enc='utf-8', qtype=None):
     while True:
         name = fh.readline().decode(enc).strip()
         if name == '':
@@ -50,7 +50,7 @@ def _guess_qual(qual_str):
             qtype = 'illumina2'
     return qtype
 
-def write_fq(fh, seqs, qtype=None):
+def write(fh, seqs, qtype=None):
     for seq in seqs:
         fh.write('@'+seq.name+'\n')
         fh.write(seq.seq+'\n')
