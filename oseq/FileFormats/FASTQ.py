@@ -1,52 +1,65 @@
 from oseq.Sequence import Seq
 file_type = 'fq'
 
-def read_fq(fh, qtype=None, enc='utf-8'):
-    seq = ''
-    for ln in self._file:
-        if ln[0] in b'>':
-            if seq != '':
-                yield Seq(seq, name=name)
-            name = ln[1:].decode(enc).strip()
-            seq = ''
-        else:
-            seq += ln.decode(enc).strip()
-    yield Seq(seq, name=name)
+#def read_fq(fh, qtype=None, enc='utf-8'):
+#    seq, qual = '',''
+#    for ln in self._file:
+#        if ln[0] == b'@':
+#            if seq != '':
+#                yield Seq(seq, name=name)
+#            name = ln[1:].decode(enc).strip()
+#            seq = ''
+#        elif ln[0] == b'+':
+#        else:
+#            seq += ln.decode(enc).strip()
+#    yield Seq(seq, name=name)
 
-def read_fq_old(fh, qtype=None, enc='utf-8'):
+def read_fq(fh, enc='utf-8', qtype=None):
     while True:
         name = fh.readline().decode(enc).strip()
-        if name == '': break
+        if name == '':
+            break
         seq = fh.readline().decode(enc).strip()
         _ = fh.readline()
-        qual = fh.readline().decode(enc).strip()
+        qual_str = fh.readline().decode(enc).strip()
         if qtype is None:
             yield Seq(seq, name=name)
         else:
-            yield Seq(seq, name=name, \
-                      qual=self._trans_qual(qual))
-
-def _trans_qual(self, qual_str):
-    if self._qtype == 'guess':
-        as_min = min(ord(i) for i in qual_str)
-        as_max = max(ord(i) for i in qual_str)
-        if as_min < 59: #PHRED+33
-            if as_max > 73:
-                self._qtype = 'illumina3'
+            if qtype == 'guess':
+                qtype = _guess_qual(qual_str)
+            if qtype in ['sanger', 'illumina3']:
+                qual = list(ord(i)-33 for i in qual_str)
             else:
-                self._qtype = 'sanger'
-        else: #PHRED+64
-            if as_min < 64:
-                self._qtype = 'solexa'
-            elif as_min < 66:
-                self._qtype = 'illumina'
-            else:
-                self._qtype = 'illumina2'
+                qual = list(ord(i)-64 for i in qual_str)
+            yield Seq(seq, name=name, qual=qual)
 
-    if self._qtype == 'sanger' or self._qtype == 'illumina3':
-        return list(ord(i)-33 for i in qual_str)
-    else:
-        return list(ord(i)-64 for i in qual_str)
+def _guess_qual(qual_str):
+    as_min = min(ord(i) for i in qual_str)
+    as_max = max(ord(i) for i in qual_str)
+    if as_min < 59: #PHRED+33
+        if as_max > 73:
+            qtype = 'illumina3'
+        else:
+            qtype = 'sanger'
+    else: #PHRED+64
+        if as_min < 64:
+            qtype = 'solexa'
+        elif as_min < 66:
+            qtype = 'illumina'
+        else:
+            qtype = 'illumina2'
+    return qtype
 
-def write_fq():
-    pass
+def write_fq(fh, seqs, qtype=None):
+    for seq in seqs:
+        fh.write('@'+seq.name+'\n')
+        fh.write(seq.seq+'\n')
+        fh.write('+\n')
+        if seq.qual is None:
+            #make up a quality score
+            qual_str = len(seq.seq)*chr(35)
+        elif qtype in ['sanger','illumina3']:
+            qual_str = ''.join(chr(i+33) for i in seq.qual)
+        else:
+            qual_str = ''.join(chr(i+64) for i in seq.qual)
+        fh.write(qual_str+'\n')

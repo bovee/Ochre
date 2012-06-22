@@ -6,7 +6,7 @@ import bz2
 import os
 
 class FileSeqList(SeqList):
-    def __init__(self, fh, file_type=None, qual_type=None):
+    def __init__(self, fh, file_type=None, qual_type='guess'):
         if isinstance(fh, str):
             fh = open(fh, 'rb')
 
@@ -46,10 +46,10 @@ class FileSeqList(SeqList):
         enc = 'utf-8'
         self._file.seek(0)
         if self._ftype == 'fa':
-            file_reader = FASTA.read_fa(self._file)
+            file_reader = FASTA.read_fa(self._file, enc)
         elif self._ftype == 'fq':
             #TODO: should be able to direct the type of quality score
-            file_reader = FASTQ.read_fq(self._file, None)
+            file_reader = FASTQ.read_fq(self._file, enc, self._qtype)
         for seq in file_reader:
             yield seq
 
