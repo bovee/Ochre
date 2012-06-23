@@ -46,10 +46,10 @@ class FileSeqList(SeqList):
         enc = 'utf-8'
         self._file.seek(0)
         if self._ftype == 'fa':
-            file_reader = FASTA.read_fa(self._file, enc)
+            file_reader = FASTA.read(self._file, enc)
         elif self._ftype == 'fq':
             #TODO: should be able to direct the type of quality score
-            file_reader = FASTQ.read_fq(self._file, enc, self._qtype)
+            file_reader = FASTQ.read(self._file, enc, self._qtype)
         for seq in file_reader:
             yield seq
 

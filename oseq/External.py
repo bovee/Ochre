@@ -12,18 +12,18 @@ def BWA(ref_seq, seqs):
 def Trimmomatic(seqs, paired_seqs=None, leading=3, trailing=3, slidingwin=(4,15), minlen=36):
     pass
 
-def BLAST(seq, seqs=None, evalue=10):
-    db_file = ''
-    seq_file = ''
+def BLAST(seq, seqs, evalue=10):
     blast_dir = ''
+    blast_results = ''
     dbtype = 'nucl'
+    res_file = ''
     subprocess.call(['makeblastdb','-in',get_seqs_file(seqs,'fa'),'-out',blast_dir,'-parse_seqids','-dbtype',dbtype])
-    subprocess.call(['blastn','-db',blast_dir,'-query',seq_file,'-outfmt','"6 sseqid"','-out',blast_results,'-evalue',str(evalue)])
-    #blastdbcmd -db blast_directory -entry_batch blast_results -out ${DATA_DIR}/blast/16s_seq.fa
+    subprocess.call(['blastn','-db',blast_dir,'-query',get_seqs_file(seqs,'fa'),'-outfmt','"6 sseqid"','-out',blast_results,'-evalue',str(evalue)])
+    subprocess.call(['blastdbcmd','-db',blast_dir,'-entry_batch',blast_results,'-out',res_file])
 
 def get_seqs_file(seqs, tmp_dir='/tmp/ochre', frmt='fa'):
     assert isinstance(seqs, SeqList)
-    if isinstance(frmt,str):
+    if isinstance(frmt, str):
         frmt == (frmt,)
     if isinstance(seqs, FileSeqList):
         if seqs._ftype in frmt:
