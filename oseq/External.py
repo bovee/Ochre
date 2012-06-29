@@ -1,32 +1,33 @@
 from oseq.FileSeqList import FileSeqList
-import subprocess
+from subprocess import call
+import os.path as op
 
-_tmp_dir = '/tmp/'
+_tmp_dir = '/tmp/ochre'
+_BLAST_dir = ''
+_BWA_dir = ''
+_TRIMMOMATIC_dir = ''
+_VELVET_dir = ''
 
-def Velvet(seqs, paired_seqs=None, kmer=25, ins_length=300):
-    pass
+def Velvet(seqs, kmer=25, ins_length=300):
+    if isinstance(seqs, tuple) or isinstance(seqs, list):
+        pass
+    call(['velveth'])
+    call(['velvetg'])
 
 def BWA(ref_seq, seqs):
-    pass
+    if True:
+        call(['samse'])
+    else:
+        call(['sampe'])
 
-def Trimmomatic(seqs, paired_seqs=None, leading=3, trailing=3, slidingwin=(4,15), minlen=36):
+def Trimmomatic(seqs, leading=3, trailing=3, slidingwin=(4,15), minlen=36):
     pass
 
 def BLAST(seq, seqs, evalue=10):
-    blast_dir = ''
-    blast_results = ''
-    dbtype = 'nucl'
-    res_file = ''
-    subprocess.call(['makeblastdb','-in',get_seqs_file(seqs,'fa'),'-out',blast_dir,'-parse_seqids','-dbtype',dbtype])
-    subprocess.call(['blastn','-db',blast_dir,'-query',get_seqs_file(seqs,'fa'),'-outfmt','"6 sseqid"','-out',blast_results,'-evalue',str(evalue)])
-    subprocess.call(['blastdbcmd','-db',blast_dir,'-entry_batch',blast_results,'-out',res_file])
-
-def get_seqs_file(seqs, tmp_dir='/tmp/ochre', frmt='fa'):
-    assert isinstance(seqs, SeqList)
-    if isinstance(frmt, str):
-        frmt == (frmt,)
-    if isinstance(seqs, FileSeqList):
-        if seqs._ftype in frmt:
-            return file_name
-    seqs.write(os.path.join(tmp_dir,'seqs.'+frmt[0]), frmt[0])
-    return file_name
+    lib_dir = op.join(_tmp_dir,str(id(seqs)))
+    res_file = op.join(lib_dir,str(id(seq)))
+    dbtype = 'nucl' #prot
+    call([op.join(_BLAST_dir,'makeblastdb'),'-in',seqs.get_file('fa'),'-out',lib_dir,'-parse_seqids','-dbtype',dbtype])
+    call([op.join(_BLAST_dir,'blastn'),'-db',lib_dir,'-query',seqs.get_file('fa'),'-outfmt','"6 sseqid"','-out',res_file+'-out','-evalue',str(evalue)])
+    call([op.join(_BLAST_dir,'blastdbcmd'),'-db',lib_dir,'-entry_batch',res_file+'-out','-out',res_file+'.fa'])
+    return FileSeqList(open(res_file+'.fa','r'))

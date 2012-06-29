@@ -43,34 +43,20 @@ class SeqList(object):
             except StopIteration:
                 raise IndexError("list index out of range")                
     
-    def get_filename(self, frmt=None, tmp_dir='/tmp/ochre/'):
-        if frmt is None:
-            frmt = 'fa'
-        elif isinstance(frmt, list) or isinstance(frmt, tuple):
-            frmt = frmt[0]
+    def get_file(self, frmt='fa', dir=None):
+        if isinstance(frmt, str):
+            frmt == (frmt,)
+        if isinstance(self, FileSeqList):
+            if seqs._ftype in frmt and dir is None:
+                return self._file.name
+            else:
+                dir = '/tmp/ochre'
         else:
-            assert isinstance(frmt, str)
-        file_name = os.path.join(tmp_dir,'seqs-'+str(id(self))+'.'+frmt[0])
-        self.write(file_name, frmt[0])
+            dir = '/tmp/ochre'
+        file_name = os.path.join(dir, 'seqs-'+str(id(self))+'.'+frmt[0])
+        seqs.write(file_name, frmt[0])
         return file_name
     
-    def properties(self):
-        pass
-
-    def align(self, method=''):
-        '''Returns a SeqList of all of the Seqs in this list aligned.'''
-        raise NotImplementedError
-
-    def find(self, method=''):
-        '''Searches through the SeqList and returns all similar Seqs.'''
-        raise NotImplementedError
-
-    def filter(self, method=''):
-        raise NotImplementedError
-
-    def assemble(self, method=''):
-        raise NotImplementedError
-
     def write(self, filename, file_type=None):
         if file_type is None:
             file_type = filename.split(os.path.extsep)[-1]
@@ -85,3 +71,28 @@ class SeqList(object):
         self._file = filename
         self._ftype = file_type
         #TODO: make me into a FileSeqList now?
+
+    def n(self, interval):
+        """Calculate N-values (i.e. N50) from a group of sequences"""
+        seq_len = [len(seq) for seq in self]
+        seq_len.sort(reverse=True)
+        s = sum(seq_len)
+        limit = s * (1-interval)
+        for l in seq_len:
+            s -= l
+            if s <= limit:
+                return l
+
+    def stats(self):
+        """'Quick' statistics on sequences in here."""
+        seqs, bps = len(self), sum(len(s) for s in self)
+        print('Sequences: '+str(seqs))
+        print('Basepairs: '+str(bps))
+        print()
+        print('Shortest: '+str(min(len(s) for s in self))+' bp')
+        print('N90: '+str(self.n(0.9))+' bp')
+        print('Average: '+str(bps/seqs)+' bp')
+        print('N50: '+str(self.n(0.5))+' bp')
+        print('N10: '+str(self.n(0.1))+' bp')
+        print('Longest: '+str(max(len(s) for s in self))+' bp')
+

@@ -1,6 +1,7 @@
 from oseq.Misc import tTables
 
 class Seq(object):
+    """A representation of the sequence of a biological macromolecule."""
     def __new__(cls, seq, *args, seq_type=None, **kwargs):
         if cls is Seq: #not a subclass, so guess which type it is
             if (set(seq).issubset(set('AUTGC-')) and \
@@ -54,8 +55,18 @@ class Seq(object):
         return len(self.seq)
     
     # Common Code
-    def reverse(self):
-        return Seq(self.seq[::-1])
+    def _invert(self, seq):
+       invert_table = {'A':'T','U':'A','T':'A','C':'G','G':'C'}
+       if self._is_rna():
+           invert_table['A'] = 'U'
+       return ''.join([invert_table[i] for i in seq])
+
+    def reverse(self, compliment=False):
+        """Returns the sequence reversed"""
+        if compliment:
+            return Seq(self._invert(self.seq[::-1]))
+        else:
+            return Seq(self.seq[::-1])
     
     def align(self, *seqs, as_ref=False, method=''):
         raise NotImplementedError
@@ -107,37 +118,38 @@ class Seq(object):
     def mass(self):
         raise NotImplementedError
 
-    def freqs(self, lngth=1, overlapping=True, fuzzy=True):
+    def freqs(self, lngth=1, rev_comp=True, overlapping=True):
+        """ Calculate the relative abundance of all possible kmers.
+
+        """
         import itertools
-        #all possible letter combinations
-        pss = [''.join(i) for i in itertools.product(*(lngth*['ATGC']))]
 
-        def invert(seq):
-           invert_table = {'A':'T','U':'A','T':'A','C':'G','G':'C'}
-           #if self._is_rna():
-           #    invert_table['A'] = 'U'
-           return ''.join([invert_table[i] for i in seq])
-
-        seq_map = {}
-        for s in pss:
-            if not invert(s[::-1]) in seq_map:
-                seq_map[s] = s
-                seq_map[invert(s[::-1])] = s
-
-        #subsequences generator
         sseqs = (self.seq[c:c+lngth] for c in range(len(self.seq)-lngth+1))
         ss_abun = {}
-        for ss in sseqs:
-            if ss in ss_abun:
-                if fuzzy:
-                    ss_abun[ss] += 1
-                else:
+
+        if rev_comp:
+            #all possible letter combinations
+            pss = [''.join(i) for i in itertools.product(*(lngth*['ATGC']))]
+            seq_map = {}
+            for s in pss:
+                if not self._invert(s[::-1]) in seq_map:
+                    seq_map[s] = s
+                    seq_map[invert(s[::-1])] = s
+
+            #subsequences generator
+            for ss in sseqs:
+                if ss in ss_abun:
                     ss_abun[seq_map[ss]] += 1
-            else:
-                if fuzzy:
-                    ss_abun[ss] = 1
                 else:
                     ss_abun[seq_map[ss]] = 1
+        else:
+            #subsequences generator
+            for ss in sseqs:
+                if ss in ss_abun:
+                    ss_abun[ss] += 1
+                else:
+                    ss_abun[ss] = 1
+        return ss_abun
         
     # Protein/Peptide Code
     def _is_rna(self):

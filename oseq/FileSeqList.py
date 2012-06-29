@@ -37,10 +37,9 @@ class FileSeqList(SeqList):
             raise NotImplementedError
         self._ftype = filetype
 
-    #def __len__(self):
-        #TODO: figure out what to do here
-        #return sum(1 for i in iter(self))
-    #    return 0
+    def __len__(self):
+        #TODO: is there a faster way?
+        return sum(1 for _ in self)
 
     def __iter__(self):
         enc = 'utf-8'
