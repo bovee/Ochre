@@ -43,7 +43,8 @@ class NASeq(Seq):
 
     def predict_struct(self):
         raise NotImplementedError
-
-def PairedNASeq(NASeq):
-    def __init__():
-        pass
+        
+class PairedNASeq(NASeq):
+    def __init__(seq1,seq2):
+        self.seq1 = seq1
+        self.seq2 = seq2
