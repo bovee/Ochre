@@ -5,10 +5,13 @@ class NASeq(Seq):
         #TODO: fails if R or Y present?
         return sum([1 for i in self.seq if i in 'GC'])/len(self.seq)
 
+    def reverse(self):
+        pass
+
     def invert(self):
         return self.__invert__()
 
-    def __invert__(self):
+    def _invert(self):
         invert_table = {'A':'T','U':'A','T':'A','C':'G','G':'C',
                         'R':'R', 'Y':'Y','N':'N','-':'-'}
         if self._is_rna():
@@ -40,3 +43,7 @@ class NASeq(Seq):
 
     def predict_struct(self):
         raise NotImplementedError
+
+def PairedNASeq(NASeq):
+    def __init__():
+        pass
