@@ -4,7 +4,7 @@ class Seq(object):
     """A representation of the sequence of a biological macromolecule."""
     def __new__(cls, seq, *args, seq_type=None, **kwargs):
         if cls is Seq: #not a subclass, so guess which type it is
-            if (set(seq).issubset(set('AUTGC-')) and \
+            if (set(seq).issubset(set('AUTGCN-')) and \
               seq_type is None) or seq_type == 'DNA' or seq_type == 'RNA':
                 from oseq.NucSeq import NASeq
                 return super(Seq, cls).__new__(NASeq, seq, *args, \
@@ -26,19 +26,23 @@ class Seq(object):
         if case_qual:
             self.qual = [40 if i.isupper() else 20 for i in seq]
 
-        #sets the type of the sequence if given, otherwise figures it out
-        if seq_type is not None:
-            self.stype = seq_type
-        elif set(seq).issubset(set('ATGC')):
-            self.stype = 'DNA'
-        elif set(seq).issubset(set('AUGC')):
-            self.stype = 'RNA'
-        elif set(seq).issubset(set('ATGC-')):
-            self.stype = 'ALIGNED_DNA'
-        elif set(seq).issubset(set('AUGC-')):
-            self.stype = 'ALIGNED_RNA'
+        #sets the type of the sequence if given, otherwise figures it out later
+        self._stype = seq_type
+
+    @property
+    def stype(self):
+        if self._stype is not None:
+            return self._stype
+        elif set(self.seq).issubset(set('ATGC')):
+            return 'DNA'
+        elif set(self.seq).issubset(set('AUGC')):
+            return 'RNA'
+        elif set(self.seq).issubset(set('ATGC-')):
+            return 'ALIGNED_DNA'
+        elif set(self.seq).issubset(set('AUGC-')):
+            return 'ALIGNED_RNA'
         else:
-            self.stype = 'UNKNOWN'
+            return 'UNKNOWN'
         
     def __repr__(self):
         rstr = self.seq if len(self.seq) <= 56 else self.seq[:53] + '...'
@@ -55,27 +59,12 @@ class Seq(object):
         return len(self.seq)
     
     # Common Code
-    def _invert(self, seq):
-       invert_table = {'A':'T','U':'A','T':'A','C':'G','G':'C'}
-       if self._is_rna():
-           invert_table['A'] = 'U'
-       return ''.join([invert_table[i] for i in seq])
-
-    def reverse(self, compliment=False):
-        """Returns the sequence reversed"""
-        if compliment:
-            return Seq(self._invert(self.seq[::-1]))
-        else:
-            return Seq(self.seq[::-1])
+    def reverse(self, **kwargs):
+        """Returns the sequence reversed."""
+        return Seq(self.seq[::-1])
     
-    def align(self, *seqs, as_ref=False, method=''):
-        raise NotImplementedError
-
-        if as_ref:
-            #run BWA
-            pass
-
     def translate(self, to_type='PROTEIN', from_type=None, table='standard'):
+        """Change a sequence into another sequence."""
         assert to_type in ['DNA','RNA','PROTEIN']
 
         if from_type is None:
@@ -150,10 +139,3 @@ class Seq(object):
                 else:
                     ss_abun[ss] = 1
         return ss_abun
-        
-    # Protein/Peptide Code
-    def _is_rna(self):
-        if 'RNA' in self.stype:
-            return True
-        else:
-            return False
