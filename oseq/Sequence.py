@@ -13,9 +13,9 @@ class Seq(object):
                 from oseq.PepSeq import PepSeq
                 return super(Seq, cls).__new__(PepSeq, seq, *args, \
                                                seq_type=seq_type, **kwargs)
-                
+
         return super(Seq,cls).__new__(Seq, seq, *args, **kwargs)
-    
+
     def __init__(self, seq, *args, name='', seq_type=None, \
                      qual=None, case_qual=False, **kwargs):
         self.seq = seq.upper()
@@ -43,7 +43,7 @@ class Seq(object):
             return 'ALIGNED_RNA'
         else:
             return 'UNKNOWN'
-        
+
     def __repr__(self):
         rstr = self.seq if len(self.seq) <= 56 else self.seq[:53] + '...'
         rstr += '' if self.qual is None else '!'
@@ -57,12 +57,12 @@ class Seq(object):
 
     def __len__(self):
         return len(self.seq)
-    
+
     # Common Code
     def reverse(self, **kwargs):
         """Returns the sequence reversed."""
         return Seq(self.seq[::-1])
-    
+
     def translate(self, to_type='PROTEIN', from_type=None, table='standard'):
         """Change a sequence into another sequence."""
         assert to_type in ['DNA','RNA','PROTEIN']
@@ -73,7 +73,7 @@ class Seq(object):
             return self
 
         if to_type == 'PROTEIN':
-            tab = tTables(table) 
+            tab = tTables(table)
             flatten = lambda l: [item for sublist in l for item in sublist]
             rtab = dict(flatten([zip(tab[i],len(tab[i])*[i]) for i in tab]))
 
@@ -89,7 +89,7 @@ class Seq(object):
             return Seq(rseq, seq_type='PROTEIN')
         else: #translate to NA
             if from_type == 'PROTEIN':
-                tab = tTables(table) 
+                tab = tTables(table)
                 try:
                     rseq = ''.join([tab[i][0] for i in self.seq])
                 except KeyError:

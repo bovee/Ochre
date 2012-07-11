@@ -1,8 +1,9 @@
 from oseq.Sequence import Seq
 file_type = 'fa'
 
+
 def read(fh, enc='utf-8'):
-    seq = ''
+    name, seq = '', ''
     for ln in fh:
         if ln[0] in b'>':
             if seq != '':
@@ -13,8 +14,8 @@ def read(fh, enc='utf-8'):
             seq += ln.decode(enc).strip()
     yield Seq(seq, name=name)
 
+
 def write(fh, seqs):
     for seq in seqs:
-        fh.write('>'+seq.name+'\n')
-        fh.write(seq.seq+'\n')
-
+        fh.write('>' + seq.name + '\n')
+        fh.write(seq.seq + '\n')

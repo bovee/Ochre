@@ -14,6 +14,7 @@ file_type = 'fq'
 #            seq += ln.decode(enc).strip()
 #    yield Seq(seq, name=name)
 
+
 def read(fh, enc='utf-8', qtype=None):
     while True:
         name = fh.readline().decode(enc).strip()
@@ -28,20 +29,21 @@ def read(fh, enc='utf-8', qtype=None):
             if qtype == 'guess':
                 qtype = _guess_qual(qual_str)
             if qtype in ['sanger', 'illumina3']:
-                qual = list(ord(i)-33 for i in qual_str)
+                qual = list(ord(i) - 33 for i in qual_str)
             else:
-                qual = list(ord(i)-64 for i in qual_str)
+                qual = list(ord(i) - 64 for i in qual_str)
             yield Seq(seq, name=name, qual=qual)
+
 
 def _guess_qual(qual_str):
     as_min = min(ord(i) for i in qual_str)
     as_max = max(ord(i) for i in qual_str)
-    if as_min < 59: #PHRED+33
+    if as_min < 59:  # PHRED+33
         if as_max > 73:
             qtype = 'illumina3'
         else:
             qtype = 'sanger'
-    else: #PHRED+64
+    else:  # PHRED+64
         if as_min < 64:
             qtype = 'solexa'
         elif as_min < 66:
@@ -50,16 +52,17 @@ def _guess_qual(qual_str):
             qtype = 'illumina2'
     return qtype
 
+
 def write(fh, seqs, qtype=None):
     for seq in seqs:
-        fh.write('@'+seq.name+'\n')
-        fh.write(seq.seq+'\n')
+        fh.write('@' + seq.name + '\n')
+        fh.write(seq.seq + '\n')
         fh.write('+\n')
         if seq.qual is None:
             #make up a quality score
-            qual_str = len(seq.seq)*chr(35)
-        elif qtype in ['sanger','illumina3']:
-            qual_str = ''.join(chr(i+33) for i in seq.qual)
+            qual_str = len(seq.seq) * chr(35)
+        elif qtype in ['sanger', 'illumina3']:
+            qual_str = ''.join(chr(i + 33) for i in seq.qual)
         else:
-            qual_str = ''.join(chr(i+64) for i in seq.qual)
-        fh.write(qual_str+'\n')
+            qual_str = ''.join(chr(i + 64) for i in seq.qual)
+        fh.write(qual_str + '\n')

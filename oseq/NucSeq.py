@@ -1,9 +1,10 @@
 from oseq.Sequence import Seq
 
+
 class NASeq(Seq):
     def gc(self):
         #TODO: fails if R or Y present?
-        return sum([1 for i in self.seq if i in 'GC'])/len(self.seq)
+        return sum([1 for i in self.seq if i in 'GC']) / len(self.seq)
 
     def invert(self):
         return Seq(self.__invert__(self.seq, self._is_rna()))
@@ -19,8 +20,8 @@ class NASeq(Seq):
         return True if 'RNA' in self.stype else False
 
     def _invert(self, seq, is_rna=False):
-        invert_table = {'A':'T','U':'A','T':'A','C':'G','G':'C',
-                        'R':'R', 'Y':'Y','N':'N','-':'-'}
+        invert_table = {'A': 'T', 'U': 'A', 'T': 'A', 'C': 'G', 'G': 'C',
+                        'R': 'R', 'Y': 'Y', 'N': 'N', '-': '-'}
         if is_rna:
             invert_table['A'] = 'U'
         return ''.join(invert_table[i] for i in seq)
@@ -30,7 +31,7 @@ class NASeq(Seq):
         import collections
         bps = collections.Counter(self.seq.upper())
         if method == 'basic':
-            return 64.9+41.0*(bps['G']+bps['C']-16.4) / \
+            return 64.9 + 41.0 * (bps['G'] + bps['C'] - 16.4) / \
               (bps['A'] + bps['T'] + bps['G'] + bps['C'])
 
     def find_orfs(self):
@@ -41,7 +42,7 @@ class NASeq(Seq):
 
     def find_restrict_sites(self):
         raise NotImplementedError
-    
+
     def find_repeats(self):
         raise NotImplementedError
 

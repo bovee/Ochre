@@ -6,6 +6,7 @@ import bz2
 import os
 import itertools
 
+
 class FileSeqList(SeqList):
     def __init__(self, fh, file_type=None, qual_type='guess'):
         if isinstance(fh, str):
@@ -31,10 +32,10 @@ class FileSeqList(SeqList):
             self._file = fh
 
         #now deal with how to handle the actual data
-        filetype = guess_filetype(ext,mgc[0])
+        filetype = guess_filetype(ext, mgc[0])
         if filetype == '':
             pass
-        elif filetype in ['em','gb']:
+        elif filetype in ['em', 'gb']:
             raise NotImplementedError
         self._ftype = filetype
 
@@ -57,18 +58,19 @@ class FileSeqList(SeqList):
         if frmt is None:
             return os.path.abspath(self._file.name)
         else:
-            if isinstance(frmt,str):
+            if isinstance(frmt, str):
                 frmt == (frmt,)
             if self._ftype in frmt:
                 return os.path.abspath(self._file.name)
             else:
                 file_name = os.path.join(tmp_dir, \
-                                         'seqs-'+str(id(self))+'.'+frmt[0])
+                  'seqs-' + str(id(self)) + '.' + frmt[0])
                 self.write(file_name, frmt[0])
                 return file_name
 
     def properties(self):
         pass
+
 
 class PairedFileSeqList(object):
     def __init__(self, fh1, fh2, file_type=None, qual_type='guess', \
@@ -86,9 +88,9 @@ class PairedFileSeqList(object):
     def __iter__(self):
         for s1, s2 in zip(self._f1, self._f2):
             #calculate length of gap in middle
-            gl = max(0,self.seq_length-len(s1.seq)-len(s2.seq))
-            yield Seq(s1.seq+(gl*'N')+s2.reverse(compliment=True).seq, \
-              name=s1.name, qual=s1.qual+(gl*[0])+s2.qual)
+            gl = max(0, self.seq_length - len(s1.seq) - len(s2.seq))
+            yield Seq(s1.seq + (gl * 'N') + s2.reverse(compliment=True).seq, \
+              name=s1.name, qual=s1.qual + (gl * [0]) + s2.qual)
 
     def __getitem__(self, key):
         if isinstance(key, str):
@@ -98,9 +100,9 @@ class PairedFileSeqList(object):
                            key.start, key.stop, key.step))
         else:
             try:
-                return next(itertools.islice(iter(self),key,key+1))
+                return next(itertools.islice(iter(self), key, key + 1))
             except StopIteration:
-                raise IndexError("list index out of range")                
+                raise IndexError("list index out of range")
 
     def interleaved(self):
         """Returns the two sets of sequences interleaved with each other

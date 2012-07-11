@@ -2,20 +2,20 @@ from oseq.Sequence import Seq
 import os
 import io
 import itertools
-import inspect
+
 
 class SeqList(object):
     def __new__(cls, sqlst, *args, **kwargs):
         from oseq.FileSeqList import FileSeqList
         if isinstance(sqlst, str):
-            if os.path.extsep in sqlst or os.path.sep in sqlst: #probably a file
+            if os.path.extsep in sqlst or os.path.sep in sqlst:  # probably a file
                 #TODO: check if URL
                 _file = open(sqlst, 'r')
                 return super(SeqList, cls).__new__(FileSeqList, _file, *args, **kwargs)
         elif isinstance(sqlst, io.IOBase):
             return super(SeqList, cls).__new__(FileSeqList, sqlst, *args, **kwargs)
         return super(SeqList, cls).__new__(SeqList, sqlst, *args, **kwargs)
-        
+
     def __init__(self, sqlst):
         if isinstance(sqlst, str):
             self._seqs = [Seq(s) for s in sqlst.split(',')]
@@ -23,7 +23,7 @@ class SeqList(object):
             self._seqs = [Seq(s) for s in sqlst]
         elif isinstance(sqlst, itertools.islice):
             self._seqs = list(sqlst)
-            
+
     def __len__(self):
         return len(self._seqs)
 
@@ -39,28 +39,29 @@ class SeqList(object):
                            key.start, key.stop, key.step))
         else:
             try:
-                return next(itertools.islice(iter(self),key,key+1))
+                return next(itertools.islice(iter(self), key, key + 1))
             except StopIteration:
-                raise IndexError("list index out of range")                
-    
+                raise IndexError("list index out of range")
+
     def get_file(self, frmt='fa', dir=None):
+        from oseq.FileSeqList import FileSeqList
         if isinstance(frmt, str):
             frmt == (frmt,)
         if isinstance(self, FileSeqList):
-            if seqs._ftype in frmt and dir is None:
+            if self._ftype in frmt and dir is None:
                 return self._file.name
             else:
                 dir = '/tmp/ochre'
         else:
             dir = '/tmp/ochre'
-        file_name = os.path.join(dir, 'seqs-'+str(id(self))+'.'+frmt[0])
-        seqs.write(file_name, frmt[0])
+        file_name = os.path.join(dir, 'seqs-' + str(id(self)) + '.' + frmt[0])
+        self.write(file_name, frmt[0])
         return file_name
-    
+
     def write(self, filename, file_type=None):
         if file_type is None:
             file_type = filename.split(os.path.extsep)[-1]
-        
+
         fh = open(filename, 'w')
         if file_type == 'fasta' or file_type == 'fa':
             from oseq.FileFormats import FASTA
@@ -77,7 +78,7 @@ class SeqList(object):
         seq_len = [len(seq) for seq in self]
         seq_len.sort(reverse=True)
         s = sum(seq_len)
-        limit = s * (1-interval)
+        limit = s * (1 - interval)
         for l in seq_len:
             s -= l
             if s <= limit:
@@ -86,13 +87,12 @@ class SeqList(object):
     def stats(self):
         """'Quick' statistics on sequences in here."""
         seqs, bps = len(self), sum(len(s) for s in self)
-        print('Sequences: '+str(seqs))
-        print('Basepairs: '+str(bps))
+        print('Sequences: ' + str(seqs))
+        print('Basepairs: ' + str(bps))
         print()
-        print('Shortest: '+str(min(len(s) for s in self))+' bp')
-        print('N90: '+str(self.n(0.9))+' bp')
-        print('Average: '+str(bps/seqs)+' bp')
-        print('N50: '+str(self.n(0.5))+' bp')
-        print('N10: '+str(self.n(0.1))+' bp')
-        print('Longest: '+str(max(len(s) for s in self))+' bp')
-
+        print('Shortest: ' + str(min(len(s) for s in self)) + ' bp')
+        print('N90: ' + str(self.n(0.9)) + ' bp')
+        print('Average: ' + str(bps / seqs) + ' bp')
+        print('N50: ' + str(self.n(0.5)) + ' bp')
+        print('N10: ' + str(self.n(0.1)) + ' bp')
+        print('Longest: ' + str(max(len(s) for s in self)) + ' bp')
