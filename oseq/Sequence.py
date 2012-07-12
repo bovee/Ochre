@@ -4,7 +4,7 @@ class Seq(object):
     """A representation of the sequence of a biological macromolecule."""
     def __new__(cls, seq, *args, seq_type=None, **kwargs):
         if cls is Seq: #not a subclass, so guess which type it is
-            if (set(seq).issubset(set('AUTGCN-')) and \
+            if (set(seq.upper()).issubset(set('AUTGCN-')) and \
               seq_type is None) or seq_type == 'DNA' or seq_type == 'RNA':
                 from oseq.NucSeq import NASeq
                 return super(Seq, cls).__new__(NASeq, seq, *args, \
