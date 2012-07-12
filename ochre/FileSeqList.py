@@ -1,6 +1,6 @@
-from oseq.Sequence import Seq
-from oseq.SeqList import SeqList
-from oseq.FileFormats import FASTA, FASTQ, guess_filetype
+from ochre.Sequence import Seq
+from ochre.SeqList import SeqList
+from ochre.FileFormats import FASTA, FASTQ, guess_filetype
 import gzip
 import bz2
 import os

@@ -1,12 +1,12 @@
-from oseq.Sequence import Seq
 import os
 import io
 import itertools
+from ochre.Sequence import Seq
 
 
 class SeqList(object):
     def __new__(cls, sqlst, *args, **kwargs):
-        from oseq.FileSeqList import FileSeqList
+        from ochre.FileSeqList import FileSeqList
         if isinstance(sqlst, str):
             if os.path.extsep in sqlst or os.path.sep in sqlst:  # probably a file
                 #TODO: check if URL
@@ -44,7 +44,7 @@ class SeqList(object):
                 raise IndexError("list index out of range")
 
     def get_file(self, frmt='fa', dir=None):
-        from oseq.FileSeqList import FileSeqList
+        from ochre.FileSeqList import FileSeqList
         if isinstance(frmt, str):
             frmt == (frmt,)
         if isinstance(self, FileSeqList):
@@ -64,10 +64,10 @@ class SeqList(object):
 
         fh = open(filename, 'w')
         if file_type == 'fasta' or file_type == 'fa':
-            from oseq.FileFormats import FASTA
+            from ochre.FileFormats import FASTA
             FASTA.write(fh, self._seqs)
         elif file_type == 'fastq' or file_type == 'fq':
-            from oseq.FileFormats import FASTQ
+            from ochre.FileFormats import FASTQ
             FASTQ.write(fh, self._seqs)
         self._file = filename
         self._ftype = file_type

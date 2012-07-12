@@ -1,5 +1,7 @@
-from oseq.External.External import app, temp, run
-from oseq.FileSeqList import PairedFileSeqList
+from ochre.External.External import app, temp, run
+import subprocess
+import re
+from ochre.FileSeqList import PairedFileSeqList
 
 
 def Velvet(seqs=None, kmer=25):

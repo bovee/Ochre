@@ -1,4 +1,4 @@
-from oseq import seqlist
+from ochre import seqlist
 import numpy as np
 import matplotlib.pyplot as plt
 

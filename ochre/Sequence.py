@@ -1,4 +1,4 @@
-from oseq.Misc import tTables
+from ochre.Misc import tTables
 
 class Seq(object):
     """A representation of the sequence of a biological macromolecule."""
@@ -6,11 +6,11 @@ class Seq(object):
         if cls is Seq: #not a subclass, so guess which type it is
             if (set(seq.upper()).issubset(set('AUTGCN-')) and \
               seq_type is None) or seq_type == 'DNA' or seq_type == 'RNA':
-                from oseq.NucSeq import NASeq
+                from ochre.NucSeq import NASeq
                 return super(Seq, cls).__new__(NASeq, seq, *args, \
                                                seq_type=seq_type, **kwargs)
             elif seq_type == 'PROTEIN':
-                from oseq.PepSeq import PepSeq
+                from ochre.PepSeq import PepSeq
                 return super(Seq, cls).__new__(PepSeq, seq, *args, \
                                                seq_type=seq_type, **kwargs)
 

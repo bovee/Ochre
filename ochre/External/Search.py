@@ -1,5 +1,5 @@
-from oseq.SeqList import SeqList
-from oseq.External.External import app, temp, run
+from ochre.SeqList import SeqList
+from ochre.External.External import app, temp, run
 import os.path as op
 
 

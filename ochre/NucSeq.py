@@ -1,4 +1,4 @@
-from oseq.Sequence import Seq
+from ochre.Sequence import Seq
 
 
 class NASeq(Seq):
@@ -33,21 +33,3 @@ class NASeq(Seq):
         if method == 'basic':
             return 64.9 + 41.0 * (bps['G'] + bps['C'] - 16.4) / \
               (bps['A'] + bps['T'] + bps['G'] + bps['C'])
-
-    def find_orfs(self):
-        raise NotImplementedError
-
-    def intron_exon_scan(self):
-        raise NotImplementedError
-
-    def find_restrict_sites(self):
-        raise NotImplementedError
-
-    def find_repeats(self):
-        raise NotImplementedError
-
-    def design_primers(self):
-        raise NotImplementedError
-
-    def predict_struct(self):
-        raise NotImplementedError

@@ -1,4 +1,4 @@
-from oseq.Sequence import Seq
+from ochre.Sequence import Seq
 file_type = 'fq'
 
 #def read_fq(fh, qtype=None, enc='utf-8'):
