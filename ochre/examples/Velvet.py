@@ -14,8 +14,9 @@ def get_velvet_stats(filename, kmer):
     #library(ggplot2)
     #seqs <- read.csv('temp.csv')
     #attach(seqs)
+    #pdf('graph.pdf')
     #ggplot(seqs, aes(x=gc,y=coverage,colour=length))+geom_point(pch=19,cex=0.5)+scale_color_gradient(low="red",high="blue",guide="colorbar",trans="log")+scale_y_log10()
-
+    #dev.off()
 
 def get_velvet_stats_matplotlib(filename, kmer):
     #fh = open('temp.csv', 'w')

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
-sys.path.append('..')
+import os.path as op
+sys.path.append(op.join(op.dirname(op.realpath(__file__)),'..'))
 from ochre import seqlist
 
 
