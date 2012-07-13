@@ -10,7 +10,6 @@ def velvet(infile, outfile, kmer=1):
     print('length', 'gc', 'coverage', sep=',', file=outfile)
     data = []
     for s in seqs:
-        print(s.name)
         cv = float(s.name.split('_')[5]) * len(s) / int(s.name.split('_')[3])
         print(len(s), s.gc(), str(cv), sep=',', file=outfile)
 
