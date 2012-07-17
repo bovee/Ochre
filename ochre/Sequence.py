@@ -1,9 +1,11 @@
 from ochre.Misc import tTables
 
+
 class Seq(object):
     """A representation of the sequence of a biological macromolecule."""
-    def __new__(cls, seq, *args, seq_type=None, **kwargs):
-        if cls is Seq: #not a subclass, so guess which type it is
+    def __new__(cls, seq, *args, **kwargs):
+        seq_type = kwargs.pop('seq_type', None)
+        if cls is Seq:  # not a subclass, so guess which type it is
             if (set(seq.upper()).issubset(set('AUTGCN-')) and \
               seq_type is None) or seq_type == 'DNA' or seq_type == 'RNA':
                 from ochre.NucSeq import NASeq
@@ -16,18 +18,26 @@ class Seq(object):
 
         return super(Seq,cls).__new__(Seq, seq, *args, **kwargs)
 
-    def __init__(self, seq, *args, name='', seq_type=None, \
-                     qual=None, case_qual=False, **kwargs):
+    def __init__(self, seq, *args, **kwargs):
+        """
+        Parameters:
+            seq (str):
+            name (str):
+            qual (list):
+            seq_type (str):
+            case_qual (bool):
+        """
+
         self.seq = seq.upper()
-        self.qual = qual
-        self.name = name
+        self.name = kwargs.get('name', '')
+        self.qual = kwargs.get('qual', None)
 
         #the case of the letters indicates the quality of the sequence
-        if case_qual:
+        if kwargs.get('case_qual', False):
             self.qual = [40 if i.isupper() else 20 for i in seq]
 
         #sets the type of the sequence if given, otherwise figures it out later
-        self._stype = seq_type
+        self._stype = kwargs.get('seq_type', None)
 
     @property
     def stype(self):
@@ -65,7 +75,7 @@ class Seq(object):
 
     def translate(self, to_type='PROTEIN', from_type=None, table='standard'):
         """Change a sequence into another sequence."""
-        assert to_type in ['DNA','RNA','PROTEIN']
+        assert to_type in ['DNA', 'RNA', 'PROTEIN']
 
         if from_type is None:
             from_type = self.stype
