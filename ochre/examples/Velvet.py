@@ -31,3 +31,9 @@ def get_velvet_stats_matplotlib(filename, kmer):
     plt.plot(data[:,2],data[:,1],c=data[:,0])
     plt.colorbar()
 
+def stats_for_paper():
+    #figure 1 - gc histogram (assemb. + raw)
+    #figure 2 - cov (y) vs. contig length (x)
+    #figure 3 - cov (y) vs. gc (all reads)
+    #figure 4 - cov (y) vs. gc (reads > 3000 bp, colored by length)
+    pass

@@ -1,4 +1,3 @@
-from ochre.Sequence import Seq
 file_type = 'fq'
 
 #def read_fq(fh, qtype=None, enc='utf-8'):
@@ -21,18 +20,19 @@ def read(fh, enc='utf-8', qtype=None):
         if name == '':
             break
         seq = fh.readline().decode(enc).strip()
-        _ = fh.readline()
-        qual_str = fh.readline().decode(enc).strip()
+        fh.readline()
         if qtype is None:
-            yield Seq(seq, name=name)
+            fh.readline()  # quality string, can skip
+            yield seq, name, {}
         else:
+            qual_str = fh.readline().decode(enc).strip()
             if qtype == 'guess':
                 qtype = _guess_qual(qual_str)
             if qtype in ['sanger', 'illumina3']:
                 qual = list(ord(i) - 33 for i in qual_str)
             else:
                 qual = list(ord(i) - 64 for i in qual_str)
-            yield Seq(seq, name=name, qual=qual)
+            yield seq, name, {'qual': qual}
 
 
 def _guess_qual(qual_str):

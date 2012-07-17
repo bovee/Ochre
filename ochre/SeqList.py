@@ -17,10 +17,25 @@ class SeqList(object):
         return super(SeqList, cls).__new__(SeqList, sqlst, *args, **kwargs)
 
     def __init__(self, sqlst):
+        """
+        Create a list of sequences.
+
+        Parameters:
+            sqlst (file, str, list): data to create the list of
+                sequences from. If *sqlst* is a file or string
+                containing a path delimiter (typically / or .)
+                read that file and return the sequences within.
+                If *sqlst* is a string, separate it by comma
+                and return each sequence. If *sqlst* is a list,
+                make each item into a sequence.
+        """
         if isinstance(sqlst, str):
             self._seqs = [Seq(s) for s in sqlst.split(',')]
         elif isinstance(sqlst, list):
-            self._seqs = [Seq(s) for s in sqlst]
+            if isinstance(sqlst[0], str):
+                self._seqs = [Seq(s) for s in sqlst]
+            elif isinstance(sqlst[0], Seq):
+                self._seqs = sqlst
         elif isinstance(sqlst, itertools.islice):
             self._seqs = list(sqlst)
 
@@ -41,24 +56,49 @@ class SeqList(object):
             try:
                 return next(itertools.islice(iter(self), key, key + 1))
             except StopIteration:
-                raise IndexError("list index out of range")
+                raise IndexError("List index out of range.")
 
-    def get_file(self, frmt='fa', dir=None):
+    def get_file(self, frmt='fa', fdir=None):
+        """
+        Write my sequences to disk in a file *seqs-######* in the
+        directory *fdir* making sure they're in a format specified by the list "frmt"
+        and return a FileSeqList.
+
+        Useful for quickly getting a file in the correct format to
+        pass onto an external program.
+
+        Parameters:
+            frmt (str): a file type (e.g. FASTA, FASTQ, etc)
+                (default: FASTA)
+            fdir (str): a directory to save the file in
+                (default: the temp directory)
+        Returns:
+            a new FileSeqList representing the saved sequences
+        """
         from ochre.FileSeqList import FileSeqList
+        from ochre.External.External import temp
+
         if isinstance(frmt, str):
             frmt == (frmt,)
-        if isinstance(self, FileSeqList):
-            if self._ftype in frmt and dir is None:
-                return self._file.name
-            else:
-                dir = '/tmp/ochre'
+
+        fname = 'seqs-' + str(id(self)) + '.' + frmt[0]
+        if fdir is None:
+            file_name = temp(fname)
         else:
-            dir = '/tmp/ochre'
-        file_name = os.path.join(dir, 'seqs-' + str(id(self)) + '.' + frmt[0])
+            file_name = os.path.join(fdir, fname)
+
         self.write(file_name, frmt[0])
-        return file_name
+        return FileSeqList(file_name)
 
     def write(self, filename, file_type=None):
+        """
+        Write out my sequences to a file.
+
+        Parameters:
+            filename (str): the name of the file to write to
+            file_type (str): a file type (e.g. FASTA, FASTQ, etc)
+                (default: determine from the file name)
+        """
         if file_type is None:
             file_type = filename.split(os.path.extsep)[-1]
 
@@ -69,12 +109,20 @@ class SeqList(object):
         elif file_type == 'fastq' or file_type == 'fq':
             from ochre.FileFormats import FASTQ
             FASTQ.write(fh, self._seqs)
-        self._file = filename
-        self._ftype = file_type
         #TODO: make me into a FileSeqList now?
+        #self._file = filename
+        #self._ftype = file_type
 
-    def n(self, interval):
-        """Calculate N-values (i.e. N50) from a group of sequences"""
+    def n(self, interval=0.5):
+        """
+        Calculate N-values (i.e. N50) from a group of sequences
+
+        Parameters:
+            interval (float): a percentage
+        Returns:
+            *interval* percentage of the bases in this file are
+            in a sequence of this length or longer
+        """
         seq_len = [len(seq) for seq in self]
         seq_len.sort(reverse=True)
         s = sum(seq_len)
