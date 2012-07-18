@@ -1,6 +1,6 @@
 from ochre.Sequence import Seq
 from ochre.SeqList import SeqList
-from ochre.FileFormats import FASTA, FASTQ, guess_filetype
+from ochre.FileFormats import guess_filetype, file_reader
 import gzip
 import bz2
 import os
@@ -39,18 +39,13 @@ class FileSeqList(SeqList):
             raise NotImplementedError
         self._ftype = filetype
 
-    def _raw_reads(self, fast=False):
+    def _raw_reads(self):
         enc = 'utf-8'
         self._file.seek(0)
-        if self._ftype == 'fa':
-            return FASTA.read(self._file, enc)
-        elif self._ftype == 'fq' and fast:
-            return FASTQ.read(self._file, enc)
-        elif self._ftype == 'fq':
-            return FASTQ.read(self._file, enc, self._qtype)
+        return file_reader(self._ftype, self._file, enc, self._qtype)
 
     def __len__(self):
-        return sum(1 for _ in self._raw_reads(fast=True))
+        return sum(1 for _ in self._raw_reads())
 
     def __iter__(self):
         for seq, name, other in self._raw_reads():
