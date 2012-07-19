@@ -10,7 +10,6 @@ class FASTA(SeqFile):
         for ln in fh:
             if ln[0] in b'>':
                 if seq != '':
-                    print('here')
                     yield seq, name, {}
                 name = ln[1:].decode(enc).strip()
                 seq = ''

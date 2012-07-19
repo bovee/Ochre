@@ -20,7 +20,7 @@ def idba(infile, outfile, kmer=100):
     outfile.write('length,gc,coverage\n')
     for s in seqs:
         ls = len(s)
-        cv = float(s.name.split('_'[-1])) * ls / (ls - inlen + 1)
+        cv = float(s.name.split('_')[-1]) * ls / (ls - kmer + 1)
         outfile.write(str(ls) + ',' + str(s.gc()) + ',' + str(cv) + '\n')
 
 
@@ -41,7 +41,7 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(description= \
-            'Calculate statistics for different types of sequence files.')
+      'Calculate statistics for different types of sequence files.')
     parser.add_argument('type', choices=('velvet', 'normal', 'idba'), \
       nargs='?', default='normal', \
       help='Type of statistical analysis to run.')
