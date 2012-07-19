@@ -21,7 +21,7 @@ def idba(infile, outfile, kmer=100):
     for s in seqs:
         ls = len(s)
         cv = float(s.name.split('_'[-1])) * ls / (ls - inlen + 1)
-        outfile.write(str(ls + ',' + str(s.gc()) + ',' + str(cv) + '\n')
+        outfile.write(str(ls) + ',' + str(s.gc()) + ',' + str(cv) + '\n')
 
 
 def normal(infile, outfile):
