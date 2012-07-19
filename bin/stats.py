@@ -42,7 +42,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description= \
             'Calculate statistics for different types of sequence files.')
-    parser.add_argument('type', choices=('velvet', 'normal'), \
+    parser.add_argument('type', choices=('velvet', 'normal', 'idba'), \
       nargs='?', default='normal', \
       help='Type of statistical analysis to run.')
     parser.add_argument('infile', \
