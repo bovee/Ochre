@@ -14,6 +14,16 @@ def velvet(infile, outfile, kmer=1):
         outfile.write(str(len(s)) + ',' + str(s.gc()) + ',' + str(cv) + '\n')
 
 
+def idba(infile, outfile, kmer=100):
+    #fh = open(outfile, 'w')
+    seqs = seqlist(infile)
+    outfile.write('length,gc,coverage\n')
+    for s in seqs:
+        ls = len(s)
+        cv = float(s.name.split('_'[-1])) * ls / (ls - inlen + 1)
+        outfile.write(str(ls + ',' + str(s.gc()) + ',' + str(cv) + '\n')
+
+
 def normal(infile, outfile):
     seqs = seqlist(infile)
     slen, bps = len(seqs), sum(len(s) for s in seqs)
@@ -41,10 +51,12 @@ if __name__ == '__main__':
       default=sys.stdout, \
       help='Name of the file to output.')
     parser.add_argument('--kmer', '-k', type=int, default=0, \
-      help='For Velvet analysis, the k-mer length.')
+      help='For Velvet analysis, the k-mer length. For IDBA, the sequence length.')
     args = parser.parse_args()
     infile = open(args.infile, 'rb')
     if args.type == 'velvet':
         velvet(infile, args.outfile, args.kmer)
     elif args.type == 'normal':
         normal(infile, args.outfile)
+    elif args.type == 'idba':
+        idba(infile, args.outfile, args.kmer)
