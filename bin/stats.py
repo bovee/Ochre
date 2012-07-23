@@ -37,12 +37,21 @@ def normal(infile, outfile):
     outfile.write('Longest: ' + str(max(len(s) for s in seqs)) + ' bps\n')
 
 
+def gc(infile, outfile, n=None):
+    seqs = seqlist(infile)
+    outfile.write('gc\n')
+    if n is None:
+        outfile.write('\n'.join(str(s.gc()) for s in seqs))
+    else:
+        outfile.write('\n'.join(str(s.gc()) for s in seqs[:n]))
+
+
 if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(description= \
       'Calculate statistics for different types of sequence files.')
-    parser.add_argument('type', choices=('velvet', 'normal', 'idba'), \
+    parser.add_argument('type', choices=('velvet', 'normal', 'idba', 'gc'), \
       nargs='?', default='normal', \
       help='Type of statistical analysis to run.')
     parser.add_argument('infile', \
@@ -52,6 +61,8 @@ if __name__ == '__main__':
       help='Name of the file to output.')
     parser.add_argument('--kmer', '-k', type=int, default=0, \
       help='For Velvet analysis, the k-mer length. For IDBA, the sequence length.')
+    parser.add_argument('--first', type=int, \
+      help='How many sequences to analyse, starting with the first.')
     args = parser.parse_args()
     infile = open(args.infile, 'rb')
     if args.type == 'velvet':
@@ -60,3 +71,5 @@ if __name__ == '__main__':
         normal(infile, args.outfile)
     elif args.type == 'idba':
         idba(infile, args.outfile, args.kmer)
+    elif args.type == 'gc':
+        gc(infile, args.outfile, args.first)
