@@ -14,6 +14,13 @@ class SeqList(object):
                 return super(SeqList, cls).__new__(FileSeqList, _file, *args, **kwargs)
         elif isinstance(sqlst, io.IOBase):
             return super(SeqList, cls).__new__(FileSeqList, sqlst, *args, **kwargs)
+        # for python 2, we need to do the following check
+        try:
+            if isinstance(sqlst, file):
+                return super(SeqList, cls).__new__(FileSeqList, sqlst, *args, **kwargs)
+        except NameError:
+            pass
+        # end python 2 code
         return super(SeqList, cls).__new__(SeqList, sqlst, *args, **kwargs)
 
     def __init__(self, sqlst):

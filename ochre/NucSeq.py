@@ -4,7 +4,7 @@ from ochre.Sequence import Seq
 class NASeq(Seq):
     def gc(self):
         #TODO: fails if R or Y present?
-        return sum([1 for i in self.seq if i in 'GC']) / len(self.seq)
+        return float(sum([1 for i in self.seq if i in 'GC'])) / len(self.seq)
 
     def invert(self):
         return Seq(self.__invert__(self.seq, self._is_rna()))
