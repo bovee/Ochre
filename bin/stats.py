@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/env python
 import sys
 import os.path as op
 sys.path.append(op.join(op.dirname(op.realpath(__file__)), '..'))
@@ -14,14 +14,23 @@ def velvet(infile, outfile, kmer=1):
         outfile.write(str(len(s)) + ',' + str(s.gc()) + ',' + str(cv) + '\n')
 
 
-def idba(infile, outfile, kmer=100):
-    #fh = open(outfile, 'w')
-    seqs = seqlist(infile)
-    outfile.write('length,gc,coverage\n')
-    for s in seqs:
-        ls = len(s)
-        cv = float(s.name.split('_')[-1]) * ls / (ls - kmer + 1)
-        outfile.write(str(ls) + ',' + str(s.gc()) + ',' + str(cv) + '\n')
+def idba(infile, outfile, kmer=100, megan=None):
+    if megan is None:
+        seqs = seqlist(infile)
+        outfile.write('length,gc,coverage\n')
+        for s in seqs:
+            ls = len(s)
+            cv = float(s.name.split('_')[-1]) * ls / (ls - kmer + 1)
+            outfile.write(str(ls) + ',' + str(s.gc()) + ',' + str(cv) + '\n')
+    else:
+        seqs = seqlist(infile)
+        name2clade = dict(line.split(',') for line in megan)
+        outfile.write('length,gc,coverage,clade\n')
+        for s in seqs:
+            ls = len(s)
+            cv = float(s.name.split('_')[-1]) * ls / (ls - kmer + 1)
+            cld = name2clade[s.name.split(' ')[0]].strip()
+            outfile.write(str(ls) + ',' + str(s.gc()) + ',' + str(cv) + ',' + cld + '\n')
 
 
 def normal(infile, outfile):
@@ -63,6 +72,8 @@ if __name__ == '__main__':
       help='For Velvet analysis, the k-mer length. For IDBA, the sequence length.')
     parser.add_argument('--first', type=int, \
       help='How many sequences to analyse, starting with the first.')
+    parser.add_argument('--megan', type=argparse.FileType('r'), default=0, \
+      help='A CSV file from Megan with "read_name, taxon_name".')
     args = parser.parse_args()
     infile = open(args.infile, 'rb')
     if args.type == 'velvet':
@@ -70,6 +81,6 @@ if __name__ == '__main__':
     elif args.type == 'normal':
         normal(infile, args.outfile)
     elif args.type == 'idba':
-        idba(infile, args.outfile, args.kmer)
+        idba(infile, args.outfile, args.kmer, args.megan)
     elif args.type == 'gc':
         gc(infile, args.outfile, args.first)
