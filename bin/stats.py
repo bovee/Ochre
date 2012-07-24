@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/n/sw/python-2.7.1/bin/python
 import sys
 import os.path as op
 sys.path.append(op.join(op.dirname(op.realpath(__file__)), '..'))
