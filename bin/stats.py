@@ -29,7 +29,7 @@ def idba(infile, outfile, kmer=100, megan=None):
         for s in seqs:
             ls = len(s)
             cv = float(s.name.split('_')[-1]) * ls / (ls - kmer + 1)
-            cld = name2clade(s.name.split(' ')[0],'None').strip()
+            cld = name2clade.get(s.name.split(' ')[0],'None').strip()
             outfile.write(str(ls) + ',' + str(s.gc()) + ',' + str(cv) + ',' + cld + '\n')
 
 
