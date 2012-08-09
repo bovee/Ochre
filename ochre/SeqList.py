@@ -62,6 +62,7 @@ class SeqList(object):
                     return itm
                 elif itm.name.startswith(key) and self.loose_indexing:
                     return itm
+            raise KeyError(str(key))
         elif isinstance(key, slice):
             return SeqList(itertools.islice(iter(self), \
                            key.start, key.stop, key.step))

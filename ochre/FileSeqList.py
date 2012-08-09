@@ -8,7 +8,7 @@ import itertools
 
 
 class FileSeqList(SeqList):
-    def __init__(self, fh, file_type=None, qual_type='guess'):
+    def __init__(self, fh, file_type=None, qual_type='guess', loose_indexing=False):
         if isinstance(fh, str):
             fh = open(fh, 'rb')
 
@@ -38,6 +38,8 @@ class FileSeqList(SeqList):
         elif filetype in ['em', 'gb']:
             raise NotImplementedError
         self._ftype = filetype
+
+        self.loose_indexing = loose_indexing
 
     def _raw_reads(self):
         enc = 'utf-8'
