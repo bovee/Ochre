@@ -33,3 +33,33 @@ class NASeq(Seq):
         if method == 'basic':
             return 64.9 + 41.0 * (bps['G'] + bps['C'] - 16.4) / \
               (bps['A'] + bps['T'] + bps['G'] + bps['C'])
+
+    def tetra_freqs(self, lgth=4, seq_map=None):
+        import itertools
+        #TODO: only good for DNA seqs
+
+        def invert(seq):
+            invert_table = {'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C'}
+            return ''.join([invert_table[i] for i in seq])
+
+        def slid_win(itr, size=4):
+            buf = ''
+            for _ in range(size):
+                buf += next(itr)
+            for l in itr:
+                yield buf
+                buf = buf[1:] + l
+            yield buf
+
+        if seq_map is None:
+            seq_map = {'': lgth * 'N'}
+            for s in (''.join(i) for i in itertools.product(*(lgth * ['ATGC']))):
+                if invert(s[::-1]) not in seq_map or s not in seq_map:
+                    seq_map[s] = s
+                    seq_map[invert(s[::-1])] = s
+
+        #subsequences generator
+        ss_abun = dict([(s, 0) for s in seq_map.values()])
+        for ss in slid_win(iter(self.seq), lgth):
+            ss_abun[seq_map.get(ss, lgth * 'N')] += 1
+        return ss_abun
