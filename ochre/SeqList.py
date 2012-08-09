@@ -23,7 +23,7 @@ class SeqList(object):
         # end python 2 code
         return super(SeqList, cls).__new__(SeqList, sqlst, *args, **kwargs)
 
-    def __init__(self, sqlst):
+    def __init__(self, sqlst, loose_indexing=False):
         """
         Create a list of sequences.
 
@@ -46,6 +46,8 @@ class SeqList(object):
         elif isinstance(sqlst, itertools.islice):
             self._seqs = list(sqlst)
 
+        self.loose_indexing = loose_indexing
+
     def __len__(self):
         return len(self._seqs)
 
@@ -55,7 +57,12 @@ class SeqList(object):
 
     def __getitem__(self, key):
         if isinstance(key, str):
-            raise NotImplementedError
+            for itm in self:
+                if itm.name == key:
+                    return itm
+                elif itm.name.startswith(key) and self.loose_indexing:
+                    return itm
+            raise KeyError(str(key))
         elif isinstance(key, slice):
             return SeqList(itertools.islice(iter(self), \
                            key.start, key.stop, key.step))
