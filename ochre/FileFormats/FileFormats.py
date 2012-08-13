@@ -28,8 +28,19 @@ def file_writer(ftype, *args, **kwargs):
 def get_plugins():
     from ochre.FileFormats.FASTA import FASTA
     from ochre.FileFormats.FASTQ import FASTQ
+    from ochre.FileFormats.Biopython import GenBank
+    from ochre.FileFormats.Biopython import Clustal
+    from ochre.FileFormats.Biopython import Stockholm
 
-    return [FASTA, FASTQ]
+    return [FASTA, FASTQ, GenBank, Clustal, Stockholm]
+
+    #try:
+    #    from ochre.FileFormats.Biopython \
+    #        import GenBank
+    #    return [FASTA, FASTQ, GenBank]
+    #except ImportError:
+    #    return [FASTA, FASTQ]
+
 
 #    import types
 #    import inspect

@@ -26,17 +26,18 @@ class FileSeqList(SeqList):
             ext = self._file.name.split(os.path.extsep)[-2]
             mgc = self._file.read(2)
             self._file.seek(0)
+            self._comp = 'gz'
         elif ext == 'bz' or mgc == b'\x42\x5a':
             raise NotImplementedError
+            self._comp = 'bz'
         else:
             self._file = fh
+            self._comp = ''
 
         #now deal with how to handle the actual data
         filetype = guess_filetype(ext, mgc[0])
         if filetype == '':
             pass
-        elif filetype in ['em', 'gb']:
-            raise NotImplementedError
         self._ftype = filetype
 
         self.loose_indexing = loose_indexing
