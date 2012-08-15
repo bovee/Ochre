@@ -6,6 +6,7 @@ class FASTA(SeqFile):
     abbrevs = ('fa', 'fasta', 'fna', 'faa')
 
     def read(self, fh, enc='utf-8', *args, **kwargs):
+        fh.seek(0)
         name, seq = '', ''
         for ln in fh:
             if ln[0] in b'>':

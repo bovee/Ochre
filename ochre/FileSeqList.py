@@ -44,7 +44,6 @@ class FileSeqList(SeqList):
 
     def _raw_reads(self):
         enc = 'utf-8'
-        self._file.seek(0)
         return file_reader(self._ftype, self._file, enc, self._qtype)
 
     def __len__(self):
