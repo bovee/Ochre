@@ -61,7 +61,7 @@ class FileSeqList(SeqList):
             frmt == (frmt,)
 
         if self._ftype in frmt and fdir is None:
-            return self  # os.path.abspath(self._file.name)
+            return os.path.abspath(self._file.name)
         #elif self._ftype in frmt:  # copy the file to the right place
         #    pass
         else:

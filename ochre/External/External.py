@@ -4,21 +4,27 @@ import os.path as op
 import pipes
 import subprocess
 import configparser
+import ochre
+
+
+def get_cfg():
+    return [op.join(ochre._path, 'ochre.cfg')]
 
 
 def app(app_name, subprog_name):
     """ Resolves the directory for app_name and
     appends the program named subprog_name to it."""
     cfg = configparser.RawConfigParser()
-    cfg.read(['ochre.cfg'])
-    return op.join(cfg.get('Locales', app_name), subprog_name)
+    cfg.read(get_cfg())
+    apppath = cfg.get('Locales', app_name).replace('$OCHRE', ochre._path)
+    return op.join(apppath, subprog_name)
 
 
 def temp(*ident):
     """ Appends ident, if given, to the temporary directory. """
     cfg = configparser.RawConfigParser()
-    cfg.read(['ochre.cfg'])
-    return op.join(cfg.get('Locales', 'TEMP_DIR'), op.join('', *ident))
+    cfg.read(get_cfg())
+    return op.join(cfg.get('Locales', 'TEMP'), op.join('', *ident))
 
 
 def run(cmds, lsf_opts=None):
