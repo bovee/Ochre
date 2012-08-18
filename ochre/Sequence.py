@@ -1,6 +1,3 @@
-from ochre.Misc import tTables
-
-
 class Seq(object):
     """A representation of the sequence of a biological macromolecule."""
     def __new__(cls, seq, *args, **kwargs):
@@ -16,7 +13,7 @@ class Seq(object):
                 return super(Seq, cls).__new__(PepSeq, seq, *args, \
                                                seq_type=seq_type, **kwargs)
 
-        return super(Seq,cls).__new__(Seq, seq, *args, **kwargs)
+        return super(Seq, cls).__new__(Seq, seq, *args, **kwargs)
 
     def __init__(self, seq, *args, **kwargs):
         """
@@ -69,55 +66,34 @@ class Seq(object):
         return len(self.seq)
 
     # Common Code
+    def slid_win(self, size=4, overlapping=True):
+        """Returns a sliding window along self.seq."""
+        itr = iter(self.seq)
+        if overlapping:
+            buf = ''
+            for _ in range(size):
+                buf += next(itr)
+            for l in itr:
+                yield buf
+                buf = buf[1:] + l
+            yield buf
+        else:
+            buf = ''
+            for l in itr:
+                buf += l
+                if len(buf) == size:
+                    yield buf
+                    buf = ''
+            yield buf
+
     def reverse(self, **kwargs):
         """Returns the sequence reversed."""
         return Seq(self.seq[::-1])
 
-    def translate(self, to_type='PROTEIN', from_type=None, table='standard'):
-        """Change a sequence into another sequence."""
-        assert to_type in ['DNA', 'RNA', 'PROTEIN']
-
-        if from_type is None:
-            from_type = self.stype
-        if from_type == to_type:
-            return self
-
-        if to_type == 'PROTEIN':
-            tab = tTables(table)
-            flatten = lambda l: [item for sublist in l for item in sublist]
-            rtab = dict(flatten([zip(tab[i],len(tab[i])*[i]) for i in tab]))
-
-            if 'RNA' in from_type:
-                rtab = dict([(i.replace('T','U'),rtab[i]) for i in rtab])
-
-            def codons():
-                for i in range(0,len(self.seq)-len(self.seq)%3,3):
-                    yield self.seq[i:i+3]
-
-            rseq = ''.join([rtab.get(cdn, 'X') for cdn in codons()])
-
-            return Seq(rseq, seq_type='PROTEIN')
-        else: #translate to NA
-            if from_type == 'PROTEIN':
-                tab = tTables(table)
-                try:
-                    rseq = ''.join([tab[i][0] for i in self.seq])
-                except KeyError:
-                    raise KeyError('Amino acid not found in table.')
-                if to_type == 'RNA':
-                    return Seq(rseq.replace('T','U'),seq_type='RNA')
-                else:
-                    return Seq(rseq,seq_type='DNA')
-            elif from_type == 'DNA':
-                #already handled the DNA->DNA case above
-                return Seq(self.seq.replace('T','U'),seq_type='RNA')
-            else:
-                return Seq(self.seq.replace('U','T'),seq_type='DNA')
-
     def mass(self):
         raise NotImplementedError
 
-    def freqs(self, lngth=1, rev_comp=True, overlapping=True):
+    def freqs(self, lngth=1, overlapping=True):
         """ Calculate the relative abundance of all possible kmers.
 
         """
@@ -126,26 +102,10 @@ class Seq(object):
         sseqs = (self.seq[c:c+lngth] for c in range(len(self.seq)-lngth+1))
         ss_abun = {}
 
-        if rev_comp:
-            #all possible letter combinations
-            pss = [''.join(i) for i in itertools.product(*(lngth*['ATGC']))]
-            seq_map = {}
-            for s in pss:
-                if not self._invert(s[::-1]) in seq_map:
-                    seq_map[s] = s
-                    seq_map[invert(s[::-1])] = s
-
-            #subsequences generator
-            for ss in sseqs:
-                if ss in ss_abun:
-                    ss_abun[seq_map[ss]] += 1
-                else:
-                    ss_abun[seq_map[ss]] = 1
-        else:
-            #subsequences generator
-            for ss in sseqs:
-                if ss in ss_abun:
-                    ss_abun[ss] += 1
-                else:
-                    ss_abun[ss] = 1
+        #subsequences generator
+        for ss in sseqs:
+            if ss in ss_abun:
+                ss_abun[ss] += 1
+            else:
+                ss_abun[ss] = 1
         return ss_abun

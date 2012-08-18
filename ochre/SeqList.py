@@ -87,13 +87,12 @@ class SeqList(object):
             fdir (str): a directory to save the file in
                 (default: the temp directory)
         Returns:
-            a new FileSeqList representing the saved sequences
+            the file name of the saved sequences
         """
-        from ochre.FileSeqList import FileSeqList
         from ochre.External.External import temp
 
         if isinstance(frmt, str):
-            frmt == (frmt,)
+            frmt = (frmt,)
 
         fname = 'seqs-' + str(id(self)) + '.' + frmt[0]
         if fdir is None:
@@ -102,7 +101,7 @@ class SeqList(object):
             file_name = os.path.join(fdir, fname)
 
         self.write(file_name, frmt[0])
-        return FileSeqList(file_name)
+        return file_name
 
     def write(self, filename, file_type=None):
         """
@@ -113,19 +112,22 @@ class SeqList(object):
             file_type (str): a file type (e.g. FASTA, FASTQ, etc)
                 (default: determine from the file name)
         """
+        from ochre.FileSeqList import FileSeqList
+        from ochre.FileFormats.FileFormats import guess_filetype, file_writer
+
         if file_type is None:
-            file_type = filename.split(os.path.extsep)[-1]
+            ftype = guess_filetype(filename.split(os.path.extsep)[-1])
+        else:
+            ftype = guess_filetype(file_type)
 
         fh = open(filename, 'w')
-        if file_type == 'fasta' or file_type == 'fa':
-            from ochre.FileFormats import FASTA
-            FASTA.write(fh, self._seqs)
-        elif file_type == 'fastq' or file_type == 'fq':
-            from ochre.FileFormats import FASTQ
-            FASTQ.write(fh, self._seqs)
+        file_writer(ftype, fh, self)
+        fh.close()
+
         #TODO: make me into a FileSeqList now?
         #self._file = filename
         #self._ftype = file_type
+        return FileSeqList(filename)
 
     def n(self, interval=0.5):
         """

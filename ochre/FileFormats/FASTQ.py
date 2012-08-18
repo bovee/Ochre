@@ -19,6 +19,7 @@ class FASTQ(SeqFile):
     #    yield Seq(seq, name=name)
 
     def read(self, fh, enc='utf-8', qtype=None):
+        fh.seek(0)
         while True:
             name = fh.readline().decode(enc).strip()
             if name == '':

@@ -13,23 +13,35 @@ def guess_filetype(ext, magic_byte=None):
     return ftype
 
 
-def file_reader(ftype, *args, **kwargs):
+def file_reader(ftype, fh, *args, **kwargs):
+    fh.seek(0)
     for pl in get_plugins():
         if ftype in pl.abbrevs:
-            return pl().read(*args, **kwargs)
+            return pl().read(fh, *args, **kwargs)
 
 
-def file_writer(ftype, *args, **kwargs):
+def file_writer(ftype, fh, *args, **kwargs):
     for pl in get_plugins():
         if ftype in pl.abbrevs:
-            return pl().write(*args, **kwargs)
+            return pl().write(fh, *args, **kwargs)
 
 
 def get_plugins():
     from ochre.FileFormats.FASTA import FASTA
     from ochre.FileFormats.FASTQ import FASTQ
+    from ochre.FileFormats.Biopython import GenBank
+    from ochre.FileFormats.Biopython import Clustal
+    from ochre.FileFormats.Biopython import Stockholm
 
-    return [FASTA, FASTQ]
+    return [FASTA, FASTQ, GenBank, Clustal, Stockholm]
+
+    #try:
+    #    from ochre.FileFormats.Biopython \
+    #        import GenBank
+    #    return [FASTA, FASTQ, GenBank]
+    #except ImportError:
+    #    return [FASTA, FASTQ]
+
 
 #    import types
 #    import inspect
