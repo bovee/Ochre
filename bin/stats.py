@@ -72,9 +72,9 @@ if __name__ == '__main__':
       help='For Velvet analysis, the k-mer length. For IDBA, the longest k-mer used.')
     parser.add_argument('--first', type=int, \
       help='How many sequences to analyse, starting with the first.')
-    parser.add_argument('--megan', type=argparse.FileType('r'), default=0, \
+    parser.add_argument('--megan', type=argparse.FileType('r'), default=None, \
       help='A CSV file from Megan with "read_name, taxon_name".')
-    parser.add_argument('--coverage', type=argparse.FileType('r'), default=0, \
+    parser.add_argument('--coverage', type=argparse.FileType('r'), default=None, \
       help='A CSV file with "read_name, coverage".')
     parser.add_argument('--assembler', choices=('idba', 'velvet', 'none'), \
       default='none', help='The assembler used to produce the contigs.')
