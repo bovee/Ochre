@@ -5,13 +5,24 @@ sys.path.append(op.join(op.dirname(op.realpath(__file__)), '..'))
 from ochre import seqlist
 
 
-def bycontig(infile, outfile, kmer=100, megan=None, cov=None):
-    seqs = seqlist(infile)
+def summary(seqs, outfile):
+    slen, bps = len(seqs), sum(len(s) for s in seqs)
+    outfile.write('Sequences: ' + str(slen) + '\n')
+    outfile.write('Basepairs: ' + str(bps) + '\n\n')
+    outfile.write('Shortest: ' + str(min(len(s) for s in seqs)) + ' bps\n')
+    outfile.write('N90: ' + str(seqs.n(0.9)) + ' bps\n')
+    outfile.write('Average: ' + str(bps / slen) + ' bps\n')
+    outfile.write('N50: ' + str(seqs.n(0.5)) + ' bps\n')
+    outfile.write('N10: ' + str(seqs.n(0.1)) + ' bps\n')
+    outfile.write('Longest: ' + str(max(len(s) for s in seqs)) + ' bps\n')
+
+
+def bycontig(seqs, outfile, dl=',', kmer=100, megan=None, cov=None):
     if megan is None:
-        outfile.write('length,gc,coverage\n')
+        outfile.write(dl.join(['length','gc','coverage'])+'\n')
     else:
         n2clade = dict(line.split(',') for line in megan)
-        outfile.write('length,gc,coverage,clade\n')
+        outfile.write(dl.join(['length','gc','coverage','clade'])+'\n')
 
     if hasattr(cov, 'read'):
         n2cov = dict(line.split(',') for line in cov)
@@ -27,32 +38,46 @@ def bycontig(infile, outfile, kmer=100, megan=None, cov=None):
             #this is an underestimate
             cv = float(s.name.split('_')[-1]) * ls / (ls - kmer + 1)
         if megan is None:
-            outfile.write(str(ls) + ',' + str(s.gc()) + ',' + str(cv) + '\n')
+            outfile.write(str(ls) + dl + str(s.gc()) + dl + str(cv) + '\n')
         else:
             cld = n2clade.get(s.name.split(' ')[0], 'None').strip()
-            outfile.write(str(ls) + ',' + str(s.gc()) + ',' + str(cv) + ',' + cld + '\n')
+            outfile.write(str(ls) + dl + str(s.gc()) + dl + str(cv) + dl + cld + '\n')
 
 
-def summary(infile, outfile):
-    seqs = seqlist(infile)
-    slen, bps = len(seqs), sum(len(s) for s in seqs)
-    outfile.write('Sequences: ' + str(slen) + '\n')
-    outfile.write('Basepairs: ' + str(bps) + '\n\n')
-    outfile.write('Shortest: ' + str(min(len(s) for s in seqs)) + ' bps\n')
-    outfile.write('N90: ' + str(seqs.n(0.9)) + ' bps\n')
-    outfile.write('Average: ' + str(bps / slen) + ' bps\n')
-    outfile.write('N50: ' + str(seqs.n(0.5)) + ' bps\n')
-    outfile.write('N10: ' + str(seqs.n(0.1)) + ' bps\n')
-    outfile.write('Longest: ' + str(max(len(s) for s in seqs)) + ' bps\n')
-
-
-def gc(infile, outfile, n=None):
-    seqs = seqlist(infile)
+def gc(seqs, outfile):
     outfile.write('gc\n')
-    if n is None:
-        outfile.write('\n'.join(str(s.gc()) for s in seqs))
-    else:
-        outfile.write('\n'.join(str(s.gc()) for s in seqs[:n]))
+    outfile.write('\n'.join(str(s.gc()) for s in seqs[:n]))
+
+
+def tetra(seqs, outfile, dl=','):
+    import itertools
+
+    # define sequence inversion for the mapping generation
+    def invert(seq):
+        invert_table = {'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C'}
+        return ''.join([invert_table[i] for i in seq])
+
+    # generate a mapping to remove reverse complements
+    seq_map = {'': 4 * 'N'}
+    for s in (''.join(i) for i in itertools.product(*(4 * ['ATGC']))):
+        if invert(s[::-1]) not in seq_map or s not in seq_map:
+            seq_map[s] = s
+            seq_map[invert(s[::-1])] = s
+
+    # write out the header
+    srted_vals = list(set(seq_map.values()))
+    srted_vals.sort()
+    outfile.write(dl.join(['Gene'] + srted_vals) + '\n')
+
+    for s in seqs:
+        frq = s.nuc_freqs(4, seq_map)
+        sum_frq = float(sum(frq.values()))
+        if sum_frq == 0:
+            sum_frq = 1
+        outfile.write(dl.join([s.name] + \
+                [str(frq[i] / sum_frq) for i in srted_vals]))
+        outfile.write('\n')
+        outfile.flush()
 
 
 if __name__ == '__main__':
@@ -60,14 +85,13 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description= \
       'Calculate statistics for different types of sequence files.')
-    parser.add_argument('type', choices=('bycontig', 'summary', 'gc'), \
-      nargs='?', default='normal', \
+    parser.add_argument('type', choices=('summary', 'bycontig', 'gc', 'tetra'), \
+      nargs='?', default='summary', \
       help='Type of statistical analysis to run.')
     parser.add_argument('infile', \
       help='Name of the sequence file.')
     parser.add_argument('--outfile', '-o', type=argparse.FileType('w'), \
-      default=sys.stdout, \
-      help='Name of the file to output.')
+      default=sys.stdout, help='Name of the file to output.')
     parser.add_argument('--kmer', '-k', type=int, default=0, \
       help='For Velvet analysis, the k-mer length. For IDBA, the longest k-mer used.')
     parser.add_argument('--first', type=int, \
@@ -78,15 +102,21 @@ if __name__ == '__main__':
       help='A CSV file with "read_name, coverage".')
     parser.add_argument('--assembler', choices=('idba', 'velvet', 'none'), \
       default='none', help='The assembler used to produce the contigs.')
+    #TODO: loose indexing for gc, bycontig and tetra?
     args = parser.parse_args()
     infile = open(args.infile, 'rb')
+    seqs = seqlist(infile)
+    if args.first is not None:
+        seqs = seqs[:args.first]
     if args.type == 'bycontig':
         if args.coverage is not None:
             cov = args.coverage
         else:
             cov = args.assembler
-        bycontig(infile, args.outfile, args.kmer, args.megan, cov)
+        bycontig(seqs, args.outfile, args.kmer, args.megan, cov)
     elif args.type == 'summary':
-        summary(infile, args.outfile)
+        summary(seqs, args.outfile)
     elif args.type == 'gc':
-        gc(infile, args.outfile, args.first)
+        gc(seqs, args.outfile)
+    elif args.type == 'tetra':
+        tetra(seqs, args.outfile)
