@@ -113,7 +113,7 @@ if __name__ == '__main__':
             cov = args.coverage
         else:
             cov = args.assembler
-        bycontig(seqs, args.outfile, args.kmer, args.megan, cov)
+        bycontig(seqs, args.outfile, kmer=args.kmer, megan=args.megan, cov=cov)
     elif args.type == 'summary':
         summary(seqs, args.outfile)
     elif args.type == 'gc':
