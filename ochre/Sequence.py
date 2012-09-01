@@ -92,20 +92,3 @@ class Seq(object):
 
     def mass(self):
         raise NotImplementedError
-
-    def freqs(self, lngth=1, overlapping=True):
-        """ Calculate the relative abundance of all possible kmers.
-
-        """
-        import itertools
-
-        sseqs = (self.seq[c:c+lngth] for c in range(len(self.seq)-lngth+1))
-        ss_abun = {}
-
-        #subsequences generator
-        for ss in sseqs:
-            if ss in ss_abun:
-                ss_abun[ss] += 1
-            else:
-                ss_abun[ss] = 1
-        return ss_abun
