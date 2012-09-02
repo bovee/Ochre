@@ -115,19 +115,24 @@ class SeqList(object):
         from ochre.FileSeqList import FileSeqList
         from ochre.FileFormats.FileFormats import guess_filetype, file_writer
 
+        if hasattr(filename, 'write'):
+            fh = filename
+            filename = fh.name
+        else:
+            fh = open(filename, 'w')
+
         if file_type is None:
             ftype = guess_filetype(filename.split(os.path.extsep)[-1])
+            if ftype == '':
+                ftype = 'fa'  # return a FASTA file if nothing else
         else:
             ftype = guess_filetype(file_type)
 
-        fh = open(filename, 'w')
         file_writer(ftype, fh, self)
-        fh.close()
 
-        #TODO: make me into a FileSeqList now?
-        #self._file = filename
-        #self._ftype = file_type
-        return FileSeqList(filename)
+        if filename != '<stdout>':
+            fh.close()
+            return FileSeqList(filename)
 
     def n(self, interval=0.5):
         """
