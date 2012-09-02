@@ -41,10 +41,10 @@ if __name__ == '__main__':
     if args.coverage is not None:
         n2cov = dict(line.split(',') for line in args.coverage)
         if args.maxcov is not None:
-            cseqs = [s for s in seqs if n2cov.get(s.name, 0) >= args.mincov \
-              and n2cov.get(s.name, 0) <= args.maxcov]
+            cseqs = [s for s in seqs if n2cov.get(s.name.split(' ')[0], 0) >= args.mincov \
+              and n2cov.get(s.name.split(' ')[0], 0) <= args.maxcov]
         else:
-            cseqs = [s for s in seqs if n2cov.get(s.name, 0) >= args.mincov]
+            cseqs = [s for s in seqs if n2cov.get(s.name.split(' ')[0], 0) >= args.mincov]
     else:
         cseqs = lseqs
 
