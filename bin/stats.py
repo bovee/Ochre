@@ -46,7 +46,7 @@ def bycontig(seqs, outfile, dl=',', kmer=100, megan=None, cov=None):
 
 def gc(seqs, outfile):
     outfile.write('gc\n')
-    outfile.write('\n'.join(str(s.gc()) for s in seqs[:n]))
+    outfile.write('\n'.join(str(s.gc()) for s in seqs))
 
 
 def tetra(seqs, outfile, dl=','):
