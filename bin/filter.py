@@ -40,11 +40,16 @@ if __name__ == '__main__':
 
     if args.coverage is not None:
         n2cov = dict(line.split(',') for line in args.coverage)
+
+        def getcov(nme):
+            print(n2cov.get(nme.split(' ')[0], 0))
+            return n2cov.get(nme.split(' ')[0], 0)
+
         if args.maxcov is not None:
-            cseqs = [s for s in lseqs if n2cov.get(s.name.split(' ')[0], 0) >= args.mincov \
-              and n2cov.get(s.name.split(' ')[0], 0) <= args.maxcov]
+            cseqs = [s for s in lseqs if getcov(s.name) >= args.mincov \
+              and getcov(s.name) <= args.maxcov]
         else:
-            cseqs = [s for s in lseqs if n2cov.get(s.name.split(' ')[0], 0) >= args.mincov]
+            cseqs = [s for s in lseqs if getcov(s.name) >= args.mincov]
     else:
         cseqs = lseqs
 
