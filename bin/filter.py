@@ -33,25 +33,22 @@ if __name__ == '__main__':
         seqs = seqs[:args.first]
 
     if args.maxlength is not None:
-        lseqs = [s for s in seqs if len(s) <= args.maxlength \
+        seqs = [s for s in seqs if len(s) <= args.maxlength \
           and len(s) >= args.minlength]
-    else:
-        lseqs = [s for s in seqs if len(s) >= args.minlength]
+    elif args.minlength > 0:
+        seqs = [s for s in seqs if len(s) >= args.minlength]
 
     if args.coverage is not None:
         n2cov = dict(line.split(',') for line in args.coverage)
 
         def getcov(nme):
-            print(n2cov.get(nme.split(' ')[0], 0))
-            return n2cov.get(nme.split(' ')[0], 0)
+            return float(n2cov.get(nme.split(' ')[0], 0))
 
         if args.maxcov is not None:
-            cseqs = [s for s in lseqs if getcov(s.name) >= args.mincov \
+            seqs = [s for s in seqs if getcov(s.name) >= args.mincov \
               and getcov(s.name) <= args.maxcov]
-        else:
-            cseqs = [s for s in lseqs if getcov(s.name) >= args.mincov]
-    else:
-        cseqs = lseqs
+        elif args.mincov > 0:
+            seqs = [s for s in seqs if getcov(s.name) >= args.mincov]
 
-    if len(cseqs) > 0:
-        seqlist(cseqs).write(args.outfile)
+    if len(seqs) > 0:
+        seqlist(seqs).write(args.outfile)
