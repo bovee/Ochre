@@ -15,7 +15,7 @@ class Seq(object):
 
         return super(Seq, cls).__new__(Seq, seq, *args, **kwargs)
 
-    def __init__(self, seq, *args, **kwargs):
+    def __init__(self, seq, name='', info={}, *args, **kwargs):
         """
         Parameters:
             seq (str):
@@ -26,8 +26,9 @@ class Seq(object):
         """
 
         self.seq = seq.upper()
-        self.name = kwargs.get('name', '')
+        self.name = name
         self.qual = kwargs.get('qual', None)
+        self.info = info
 
         #the case of the letters indicates the quality of the sequence
         if kwargs.get('case_qual', False):

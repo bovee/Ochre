@@ -35,6 +35,7 @@ def Velvet(mseqs, kmer=25, out_dir=None):
 
 
 def get_velvet_bam_file(velvet_afg):
+    #TODO: this might not work?
     amos_bank = 'data.bnk'
     bout = 'data'
     c = [[app('AMOS', 'bank-transact'), '-m', velvet_afg, '-b', amos_bank, '-c']]

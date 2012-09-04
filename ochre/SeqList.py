@@ -1,10 +1,16 @@
 import os
 import io
 import itertools
+import types
 from ochre.Sequence import Seq
 
 
 class SeqList(object):
+    """
+    A Python object that represents a collection of sequences.
+    The underlying storage can be in a file (through the
+    subclass FileSeqList) or in a list of Seq objects.
+    """
     def __new__(cls, sqlst, *args, **kwargs):
         from ochre.FileSeqList import FileSeqList
         if isinstance(sqlst, str):
@@ -23,7 +29,7 @@ class SeqList(object):
         # end python 2 code
         return super(SeqList, cls).__new__(SeqList, sqlst, *args, **kwargs)
 
-    def __init__(self, sqlst, loose_indexing=False):
+    def __init__(self, sqlst, loose_indexing=False, other=None):
         """
         Create a list of sequences.
 
@@ -35,6 +41,16 @@ class SeqList(object):
                 If *sqlst* is a string, separate it by comma
                 and return each sequence. If *sqlst* is a list,
                 make each item into a sequence.
+            loose_indexing (bool): if true, match sequences that
+                start with a given string and not the entire
+                string, i.e. seqlist['te'] will match a sequence
+                with the key, 'test'.
+            other_csv (file, str): a csv file containing a list
+                of data associated with each sequence, e.g.
+                coverages, OTUs, etc. in the format:
+                    "SeqName, Data1, Data2, ..."
+                Data1, Data2, etc can then be obtained from the
+                sequence through the info parameter.
         """
         if isinstance(sqlst, str):
             self._seqs = [Seq(s) for s in sqlst.split(',')]
@@ -43,8 +59,19 @@ class SeqList(object):
                 self._seqs = [Seq(s) for s in sqlst]
             elif isinstance(sqlst[0], Seq):
                 self._seqs = sqlst
-        elif isinstance(sqlst, itertools.islice):
+        elif isinstance(sqlst, itertools.islice) or \
+          isinstance(sqlst, types.GeneratorType):
             self._seqs = list(sqlst)
+        elif sqlst is not None:
+            # sqlst should be none if this is getting called
+            # from FileSeqList, because that's already handling
+            # the same things with _file
+            raise TypeError('sqlst is not a file, str, or list.')
+
+        if other is not None:
+            if isinstance(sqlst, str):
+                other = open(other, 'r')
+        self._other = other
 
         self.loose_indexing = loose_indexing
 
@@ -153,15 +180,37 @@ class SeqList(object):
             if s <= limit:
                 return l
 
+    def filter(self, min_len=None, max_len=None, min_gc=None, \
+      max_gc=None, min_cov=None, max_cov=None):
+        pass
+
+    def sample(self, n, replace=False):
+        """
+        Randomly sample sequences from this seqlist.
+
+        Parameters:
+            n (int): number of sequences to sample
+            replace (bool): sample with replacement?
+                (default: False)
+        Returns:
+            SeqList with *n* sampled sequences.
+        """
+        import random
+
+        if replace:
+            return SeqList(random.choice(list(self)) for _ in range(n))
+        else:
+            return SeqList(random.sample(list(self), n))
+
     def stats(self):
-        """'Quick' statistics on sequences in here."""
+        """'Quick' statistics on sequences."""
         seqs, bps = len(self), sum(len(s) for s in self)
-        print('Sequences: ' + str(seqs))
-        print('Basepairs: ' + str(bps))
-        print()
-        print('Shortest: ' + str(min(len(s) for s in self)) + ' bp')
-        print('N90: ' + str(self.n(0.9)) + ' bp')
-        print('Average: ' + str(bps / seqs) + ' bp')
-        print('N50: ' + str(self.n(0.5)) + ' bp')
-        print('N10: ' + str(self.n(0.1)) + ' bp')
-        print('Longest: ' + str(max(len(s) for s in self)) + ' bp')
+        o = 'Sequences: ' + str(seqs) + '\n'
+        o += 'Basepairs: ' + str(bps) + '\n\n'
+        o += 'Shortest: ' + str(min(len(s) for s in self)) + ' bp\n'
+        o += 'N90: ' + str(self.n(0.9)) + ' bp\n'
+        o += 'Average: ' + str(bps / seqs) + ' bp\n'
+        o += 'N50: ' + str(self.n(0.5)) + ' bp\n'
+        o += 'N10: ' + str(self.n(0.1)) + ' bp\n'
+        o += 'Longest: ' + str(max(len(s) for s in self)) + ' bp'
+        return o
