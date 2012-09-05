@@ -71,7 +71,16 @@ class SeqList(object):
         if other is not None:
             if isinstance(sqlst, str):
                 other = open(other, 'r')
-        self._other = other
+            keys = other.readline().split(',')[1:]
+            self._other = {}
+            for ln in other:
+                sep = ln.split(',')[1:]
+                self._other[1:] = dict(zip(keys, sep[1:]))
+            if self._seqs is not None:
+                for s in self._seqs:
+                    s.info = self._other.get(s.name, {})
+        else:
+            self._other = None
 
         self.loose_indexing = loose_indexing
 
@@ -137,7 +146,8 @@ class SeqList(object):
         Parameters:
             filename (str): the name of the file to write to
             file_type (str): a file type (e.g. FASTA, FASTQ, etc)
-                (default: determine from the file name)
+                (default: determine from the file name,
+                 otherwise FASTA)
         """
         from ochre.FileSeqList import FileSeqList
         from ochre.FileFormats.FileFormats import guess_filetype, file_writer

@@ -51,10 +51,15 @@ class FileSeqList(SeqList):
 
     def __iter__(self):
         for seq, name, other in self._raw_reads():
-            if 'qual' in other.keys():
-                yield Seq(seq, name=name, qual=other['qual'])
+            if self._other is not None:
+                info = self._other.get(name, {})
             else:
-                yield Seq(seq, name=name)
+                info = {}
+
+            if 'qual' in other.keys():
+                yield Seq(seq, name=name, qual=other['qual'], info=info)
+            else:
+                yield Seq(seq, name=name, info=info)
 
     def get_file(self, frmt='fa', fdir=None):
         if isinstance(frmt, str):

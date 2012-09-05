@@ -57,6 +57,7 @@ def IDBA(seqs, out_dir=None):
     c = [[app('IDBA_UD', 'idba_ud'), '-r', fname, '-o', out_dir]]
     # '--num_threads','8'
     run(c)
+    return FileSeqList(op.join(out_dir, 'scaffold.fa'))
 
 
 def Newbler(seqs, out_dir=None):
