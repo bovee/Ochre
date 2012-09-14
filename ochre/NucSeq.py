@@ -108,18 +108,21 @@ class NASeq(Seq):
         zscore = {}
         for tet, f in abun[4].items():
             if f != 0 and tet != 'NNNN':
-                n23 = abun[2][tet[1:3]]
+                s = {2: sum(abun[2].values()), \
+                  3: sum(abun[3].values()), \
+                  4: sum(abun[4].values())}
+                n23 = abun[2][tet[1:3]] / s[2]
                 if n23 != 0:
-                    n123 = abun[3][tet[:3]]
-                    n234 = abun[3][tet[1:]]
+                    n123 = abun[3][tet[:3]] / s[3]
+                    n234 = abun[3][tet[1:]] / s[3]
                     e = n123 * n234 / n23
                     v = e * (n23 - n123) * (n23 - n234) / n23 ** 2
                 else:
                     e, v = 0, 0
-                n23i = abun[2][rc(tet[1:3])]
+                n23i = abun[2][rc(tet[1:3])] / s[2]
                 if n23i != 0:
-                    n123i = abun[3][rc(tet[:3])]
-                    n234i = abun[3][rc(tet[1:])]
+                    n123i = abun[3][rc(tet[:3])] / s[3]
+                    n234i = abun[3][rc(tet[1:])] / s[3]
                     ei = n123i * n234i / n23i
                     vi = ei * (n23i - n123i) * (n23i - n234i) / n23i ** 2
                 else:
@@ -127,7 +130,7 @@ class NASeq(Seq):
                 tv = sqrt(sqrt(v ** 2 + vi ** 2))
                 if tv == 0:
                     tv = 1e-8
-                zscore[tet] = (f - e - ei) / tv
+                zscore[tet] = ((f / s[4]) - e - ei) / tv
             else:
                 zscore[tet] = 0
         return zscore
