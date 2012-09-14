@@ -41,6 +41,17 @@ def letter_library(letter, alphabet):
     return lookup[letter]
 
 
+def seq3_table(letter):
+    lookup = {'R': 'Arg', 'H': 'His', 'K': 'Lys', 'D': 'Asp',
+              'E': 'Glu', 'S': 'Ser', 'T': 'Thr', 'N': 'Asn',
+              'Q': 'Gln', 'C': 'Cys', 'G': 'Gly', 'P': 'Pro',
+              'A': 'Ala', 'V': 'Val', 'I': 'Ile', 'L': 'Leu',
+              'M': 'Met', 'F': 'Phe', 'Y': 'Tyr', 'W': 'Trp',
+              'B': 'Asx', 'J': 'Xle', 'O': 'Pyl', 'U': 'Sel',
+              'Z': 'Glx', '*': 'Ter'}
+    return lookup.get(letter, 'Xaa')
+
+
 def tTables(tableName='standard'):
     #TODO: codes from http://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi?mode=c
     if tableName == 'standard':

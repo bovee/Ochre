@@ -3,28 +3,29 @@
 import os.path as op
 import pipes
 import subprocess
-import configparser
 import ochre
 
 
-def get_cfg():
-    return [op.join(ochre._path, 'ochre.cfg')]
+def get_cfg(header, key):
+    try:
+        import configparser
+    except ImportError:
+        import ConfigParser as configparser
+    cfg = configparser.RawConfigParser()
+    cfg.read([op.join(ochre._path, 'ochre.cfg')])
+    return cfg.get(header, key)
 
 
 def app(app_name, subprog_name):
     """ Resolves the directory for app_name and
     appends the program named subprog_name to it."""
-    cfg = configparser.RawConfigParser()
-    cfg.read(get_cfg())
-    apppath = cfg.get('Locales', app_name).replace('$OCHRE', ochre._path)
+    apppath = get_cfg('Locales', app_name).replace('$OCHRE', ochre._path)
     return op.join(apppath, subprog_name)
 
 
 def temp(*ident):
     """ Appends ident, if given, to the temporary directory. """
-    cfg = configparser.RawConfigParser()
-    cfg.read(get_cfg())
-    return op.join(cfg.get('Locales', 'TEMP'), op.join('', *ident))
+    return op.join(get_cfg('Locales', 'TEMP'), op.join('', *ident))
 
 
 def run(cmds, lsf_opts=None):
@@ -35,6 +36,9 @@ def run(cmds, lsf_opts=None):
         for c in cmds:
             p = subprocess.Popen(c)
             p.wait()
+            if p.returncode != 0:
+                raise OSError('Line "' + ' '.join(c) + \
+                  '"\n failed with error ' + str(p.returncode))
     else:
         lsf_opts = {'-u': 'bovee@fas.harvard.edu',
                 '-J': 'process_illumina',

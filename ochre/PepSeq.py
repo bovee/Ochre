@@ -19,6 +19,10 @@ class PepSeq(Seq):
     def to_pep(self, table='standard'):
         return self
 
+    def seq3(self):
+        from ochre.Misc import seq3_table
+        return ''.join(seq3_table(l) for l in self.seq)
+
     def pi(self):
         raise NotImplementedError
 

@@ -75,3 +75,63 @@ class NASeq(Seq):
         for ss in self.slid_win(lngth):
             ss_abun[seq_map.get(ss, lngth * 'N')] += 1
         return ss_abun
+
+    def tetra_zscore(self, seq_map=None):
+        import itertools
+        from math import sqrt
+        #TODO: only good for DNA seqs
+
+        def rc(seq):  # reverse complement
+            invert_table = {'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C'}
+            return ''.join(invert_table.get(i, 'N') for i in seq[::-1])
+
+        if seq_map is None:
+            seq_map = {}
+            seq_map[4] = {'': 4 * 'N'}
+            for s in (''.join(i) for i in itertools.product(*(4 * ['ATGC']))):
+                if rc(s) not in seq_map[4] or s not in seq_map[4]:
+                    seq_map[4][s] = s
+                    seq_map[4][rc(s)] = s
+            seq_map[3] = {'': 3 * 'N'}
+            for s in (''.join(i) for i in itertools.product(*(3 * ['ATGC']))):
+                seq_map[3][s] = s
+            seq_map[2] = {'': 2 * 'N'}
+            for s in (''.join(i) for i in itertools.product(*(2 * ['ATGC']))):
+                seq_map[2][s] = s
+
+        #subsequences generator
+        abun = {2: {'NN': 0}, 3: {'NNN': 0}, 4: {'NNNN': 0}}
+        for l in [2, 3, 4]:
+            abun[l] = dict([(s, 0) for s in seq_map[l].values()])
+            for ss in self.slid_win(l):
+                abun[l][seq_map[l].get(ss, l * 'N')] += 1
+        zscore = {}
+        for tet, f in abun[4].items():
+            if f != 0 and tet != 'NNNN':
+                n23 = abun[2][tet[1:3]]
+                if n23 != 0:
+                    n123 = abun[3][tet[:3]]
+                    n234 = abun[3][tet[1:]]
+                    e = n123 * n234 / n23
+                    v = e * (n23 - n123) * (n23 - n234) / n23 ** 2
+                else:
+                    e, v = 0, 0
+                n23i = abun[2][rc(tet[1:3])]
+                if n23i != 0:
+                    n123i = abun[3][rc(tet[:3])]
+                    n234i = abun[3][rc(tet[1:])]
+                    ei = n123i * n234i / n23i
+                    vi = ei * (n23i - n123i) * (n23i - n234i) / n23i ** 2
+                else:
+                    ei, vi = 0, 0
+                tv = sqrt(sqrt(v ** 2 + vi ** 2))
+                if tv == 0:
+                    tv = 1e-8
+                zscore[tet] = (f - e - ei) / tv
+            else:
+                zscore[tet] = 0
+        return zscore
+
+    def mass(self):
+        RNA_mass_table = {'A': 347.22, 'U': 324.18, 'G': 363.22, 'C': 323.20}
+        DNA_mass_table = {'A': 331.22, 'T': 320.19, 'G': 347.22, 'C': 307.20}
