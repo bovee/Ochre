@@ -52,30 +52,32 @@ def gc(seqs, outfile):
 def tetra(seqs, outfile, dl=','):
     import itertools
 
-    # define sequence inversion for the mapping generation
-    def invert(seq):
+    def rc(seq):  # reverse complement
         invert_table = {'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C'}
-        return ''.join([invert_table[i] for i in seq])
+        return ''.join(invert_table.get(i, 'N') for i in seq[::-1])
 
-    # generate a mapping to remove reverse complements
-    seq_map = {'': 4 * 'N'}
+    seq_map = {}
+    seq_map[4] = {'': 4 * 'N'}
     for s in (''.join(i) for i in itertools.product(*(4 * ['ATGC']))):
-        if invert(s[::-1]) not in seq_map or s not in seq_map:
-            seq_map[s] = s
-            seq_map[invert(s[::-1])] = s
+        if rc(s) not in seq_map[4] or s not in seq_map[4]:
+            seq_map[4][s] = s
+            seq_map[4][rc(s)] = s
+    seq_map[3] = {'': 3 * 'N'}
+    for s in (''.join(i) for i in itertools.product(*(3 * ['ATGC']))):
+        seq_map[3][s] = s
+    seq_map[2] = {'': 2 * 'N'}
+    for s in (''.join(i) for i in itertools.product(*(2 * ['ATGC']))):
+        seq_map[2][s] = s
 
     # write out the header
-    srted_vals = list(set(seq_map.values()))
+    srted_vals = list(set(seq_map[4].values()))
     srted_vals.sort()
     outfile.write(dl.join(['Gene'] + srted_vals) + '\n')
 
     for s in seqs:
-        frq = s.nuc_freqs(4, seq_map)
-        sum_frq = float(sum(frq.values()))
-        if sum_frq == 0:
-            sum_frq = 1
+        frq = s.tetra_zscore(seq_map)
         outfile.write(dl.join([s.name] + \
-                [str(frq[i] / sum_frq) for i in srted_vals]))
+          [str(frq[i]) for i in srted_vals]))
         outfile.write('\n')
         outfile.flush()
 
