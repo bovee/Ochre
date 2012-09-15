@@ -108,9 +108,9 @@ class NASeq(Seq):
         zscore = {}
         for tet, f in abun[4].items():
             if f != 0 and tet != 'NNNN':
-                s = {2: sum(abun[2].values()), \
-                  3: sum(abun[3].values()), \
-                  4: sum(abun[4].values())}
+                s = {2: float(sum(abun[2].values())), \
+                  3: float(sum(abun[3].values())), \
+                  4: float(sum(abun[4].values()))}
                 n23 = abun[2][tet[1:3]] / s[2]
                 if n23 != 0:
                     n123 = abun[3][tet[:3]] / s[3]
