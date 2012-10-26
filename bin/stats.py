@@ -56,6 +56,32 @@ def tetra(seqs, outfile, dl=','):
         invert_table = {'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C'}
         return ''.join(invert_table.get(i, 'N') for i in seq[::-1])
 
+    seq_map = {'': 4 * 'N'}
+    for s in (''.join(i) for i in itertools.product(*(4 * ['ATGC']))):
+        if rc(s) not in seq_map or s not in seq_map:
+            seq_map[s] = s
+            seq_map[rc(s)] = s
+
+    # write out the header
+    srted_vals = list(set(seq_map[4].values()))
+    srted_vals.sort()
+    outfile.write(dl.join(['Gene'] + srted_vals) + '\n')
+
+    for s in seqs:
+        frq = s.nuc_freqs(seq_map)
+        outfile.write(dl.join([s.name] + \
+          [str(frq[i]) for i in srted_vals]))
+        outfile.write('\n')
+        outfile.flush()
+
+
+def tetraz(seqs, outfile, dl=','):
+    import itertools
+
+    def rc(seq):  # reverse complement
+        invert_table = {'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C'}
+        return ''.join(invert_table.get(i, 'N') for i in seq[::-1])
+
     seq_map = {}
     seq_map[4] = {'': 4 * 'N'}
     for s in (''.join(i) for i in itertools.product(*(4 * ['ATGC']))):
@@ -87,7 +113,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description= \
       'Calculate statistics for different types of sequence files.')
-    parser.add_argument('type', choices=('summary', 'bycontig', 'gc', 'tetra'), \
+    parser.add_argument('type', choices=('summary', 'bycontig', 'gc', 'tetra', 'tetraz'), \
       nargs='?', default='summary', \
       help='Type of statistical analysis to run.')
     parser.add_argument('infile', \
@@ -122,3 +148,5 @@ if __name__ == '__main__':
         gc(seqs, args.outfile)
     elif args.type == 'tetra':
         tetra(seqs, args.outfile)
+    elif args.type == 'tetraz':
+        tetraz(seqs, args.outfile)
