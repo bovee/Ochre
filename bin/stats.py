@@ -63,7 +63,7 @@ def tetra(seqs, outfile, dl=','):
             seq_map[rc(s)] = s
 
     # write out the header
-    srted_vals = list(set(seq_map[4].values()))
+    srted_vals = list(set(seq_map.values()))
     srted_vals.sort()
     outfile.write(dl.join(['Gene'] + srted_vals) + '\n')
 
