@@ -68,7 +68,7 @@ def tetra(seqs, outfile, dl=','):
     outfile.write(dl.join(['Gene'] + srted_vals) + '\n')
 
     for s in seqs:
-        frq = s.nuc_freqs(seq_map)
+        frq = s.nuc_freqs(4, seq_map)
         outfile.write(dl.join([s.name] + \
           [str(frq[i]) for i in srted_vals]))
         outfile.write('\n')
